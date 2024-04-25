@@ -150,5 +150,5 @@ if __name__ == "__main__":
     collate_function = get_collate_function(cfg)
 
     module = Model_pl(cfg, clip, special_embs, model, projection, train_dataset, collate_function)
-    trainer = pl.Trainer(devices=8, max_epochs=cfg.n_epochs, logger=logger, accumulate_grad_batches=cfg.grad_accum)
+    trainer = pl.Trainer(devices=8, max_epochs=cfg.n_epochs, logger=logger, shuffle=True, accumulate_grad_batches=cfg.grad_accum)
     trainer.fit(module)
