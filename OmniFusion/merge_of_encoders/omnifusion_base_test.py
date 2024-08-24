@@ -15,10 +15,10 @@ PROMPT = "This is a dialog with AI assistant.\n"
 tokenizer = AutoTokenizer.from_pretrained("AIRI-Institute/OmniFusion", subfolder="OmniMistral-v1_1/tokenizer", use_fast=False)
 model = AutoModelForCausalLM.from_pretrained("AIRI-Institute/OmniFusion", subfolder="OmniMistral-v1_1/tuned-model", torch_dtype=torch.bfloat16, device_map=DEVICE)
 
-hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/projection.pt", local_dir='./')
-hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/special_embeddings.pt", local_dir='./')
-projection = torch.load("OmniMistral-v1_1/projection.pt", map_location=DEVICE)
-special_embs = torch.load("OmniMistral-v1_1/special_embeddings.pt", map_location=DEVICE)
+hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="../OmniMistral-v1_1/projection.pt", local_dir='../')
+hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="../OmniMistral-v1_1/special_embeddings.pt", local_dir='../')
+projection = torch.load("../OmniMistral-v1_1/projection.pt", map_location=DEVICE)
+special_embs = torch.load("../OmniMistral-v1_1/special_embeddings.pt", map_location=DEVICE)
 
 clip = CLIPVisionTower("openai/clip-vit-large-patch14-336")
 clip.load_model()
