@@ -2,12 +2,9 @@ import torch
 from PIL import Image
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from urllib.request import urlopen
-import torch.nn as nn
 from huggingface_hub import hf_hub_download
 
-# Loading some sources of the projection adapter and image encoder
-# hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="models.py", local_dir='./')
-from models import CLIPVisionTower
+from OmniFusion.merge_of_encoders.encoders.clip import CLIPVisionTower
 
 DEVICE = "cuda:0"
 PROMPT = "This is a dialog with AI assistant.\n"

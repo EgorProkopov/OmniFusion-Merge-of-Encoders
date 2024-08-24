@@ -2,14 +2,12 @@ import torch
 from PIL import Image
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from urllib.request import urlopen
-import torch.nn as nn
 from huggingface_hub import hf_hub_download
 
-# Loading some sources of the projection adapter and image encoder
-# hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="models.py", local_dir='./')
-from models import CLIPVisionTower
-from our_models import CoDETRVisionTower
-from tower_mixer import MLPMixer
+from OmniFusion.merge_of_encoders.encoders.clip import CLIPVisionTower
+from OmniFusion.merge_of_encoders.encoders.codetr import CoDETRVisionTower
+from OmniFusion.merge_of_encoders.adapters import MLPAdapter
+
 
 DEVICE = "cuda:0"
 PROMPT = "This is a dialog with AI assistant.\n"
@@ -19,10 +17,13 @@ model = AutoModelForCausalLM.from_pretrained("AIRI-Institute/OmniFusion", subfol
 
 hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/projection.pt", local_dir='../')
 hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/special_embeddings.pt", local_dir='../')
+
 clip_projection = torch.load("../OmniMistral-v1_1/projection.pt", map_location=DEVICE)
 clip_projection = clip_projection.to(dtype=torch.float32)
-mlp_projection = MLPMixer(in_dim=4096, out_dim=4096)
+
+mlp_projection = MLPAdapter(in_dim=4096, out_dim=4096)
 mlp_projection = mlp_projection.to(DEVICE)
+
 special_embs = torch.load("../OmniMistral-v1_1/special_embeddings.pt", map_location=DEVICE)
 
 clip = CLIPVisionTower("openai/clip-vit-large-patch14-336")
