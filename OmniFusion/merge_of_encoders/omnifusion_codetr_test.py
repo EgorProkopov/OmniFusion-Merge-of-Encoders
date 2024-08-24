@@ -95,7 +95,8 @@ answer = gen_answer(
     tokenizer,
     clip,
     codetr,
-    mlp_projection,
+    clip_projection=clip_projection,
+    codetr_projection=mlp_projection,
     query=question,
     special_embs=special_embs,
     image=img
