@@ -15,7 +15,7 @@ DEVICE = "cuda:0"
 PROMPT = "This is a dialog with AI assistant.\n"
 
 tokenizer = AutoTokenizer.from_pretrained("AIRI-Institute/OmniFusion", subfolder="OmniMistral-v1_1/tokenizer", use_fast=False)
-model = AutoModelForCausalLM.from_pretrained("AIRI-Institute/OmniFusion", subfolder="OmniMistral-v1_1/tuned-model", torch_dtype=torch.float16, device_map=DEVICE)
+model = AutoModelForCausalLM.from_pretrained("AIRI-Institute/OmniFusion", subfolder="OmniMistral-v1_1/tuned-model", torch_dtype=torch.float32, device_map=DEVICE)
 
 hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/projection.pt", local_dir='../')
 hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/special_embeddings.pt", local_dir='../')
@@ -24,11 +24,11 @@ special_embs = torch.load("../OmniMistral-v1_1/special_embeddings.pt", map_locat
 
 # clip = CLIPVisionTower("openai/clip-vit-large-patch14-336")
 # clip.load_model()
-# clip = clip.to(device=DEVICE, dtype=torch.bfloat16)
+# clip = clip.to(device=DEVICE, dtype=torch.bfloat32)
 
 codetr = CoDETRVisionTower("microsoft/conditional-detr-resnet-50")
 codetr.load_model()
-codetr = codetr.to(device=DEVICE, dtype=torch.float16)
+codetr = codetr.to(device=DEVICE, dtype=torch.float32)
 
 
 def gen_answer(model, tokenizer, clip, projection, query, special_embs, image=None):
@@ -50,14 +50,14 @@ def gen_answer(model, tokenizer, clip, projection, query, special_embs, image=No
     }
     with torch.no_grad():
         image_features = clip.image_processor(image, return_tensors='pt')
-        image_embedding = clip(image_features['pixel_values']).to(device=DEVICE, dtype=torch.float16)
+        image_embedding = clip(image_features['pixel_values']).to(device=DEVICE, dtype=torch.float32)
 
-        projected_vision_embeddings = projection(image_embedding).to(device=DEVICE, dtype=torch.float16)
+        projected_vision_embeddings = projection(image_embedding).to(device=DEVICE, dtype=torch.float32)
         prompt_ids = tokenizer.encode(f"{PROMPT}", add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
         question_ids = tokenizer.encode(query, add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
 
-        prompt_embeddings = model.model.embed_tokens(prompt_ids).to(torch.float16)
-        question_embeddings = model.model.embed_tokens(question_ids).to(torch.float16)
+        prompt_embeddings = model.model.embed_tokens(prompt_ids).to(torch.float32)
+        question_embeddings = model.model.embed_tokens(question_ids).to(torch.float32)
 
         embeddings = torch.cat(
             [
@@ -70,7 +70,7 @@ def gen_answer(model, tokenizer, clip, projection, query, special_embs, image=No
                 special_embs['BOT'][None, None, ...]
             ],
             dim=1,
-        ).to(dtype=torch.float16, device=DEVICE)
+        ).to(dtype=torch.float32, device=DEVICE)
         out = model.generate(inputs_embeds=embeddings, **gen_params)
     out = out[:, 1:]
     generated_texts = tokenizer.batch_decode(out)[0]
