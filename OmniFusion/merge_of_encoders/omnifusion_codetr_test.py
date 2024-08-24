@@ -15,7 +15,7 @@ DEVICE = "cuda:0"
 PROMPT = "This is a dialog with AI assistant.\n"
 
 tokenizer = AutoTokenizer.from_pretrained("AIRI-Institute/OmniFusion", subfolder="OmniMistral-v1_1/tokenizer", use_fast=False)
-model = AutoModelForCausalLM.from_pretrained("AIRI-Institute/OmniFusion", subfolder="OmniMistral-v1_1/tuned-model", torch_dtype=torch.bfloat16, device_map=DEVICE)
+model = AutoModelForCausalLM.from_pretrained("AIRI-Institute/OmniFusion", subfolder="OmniMistral-v1_1/tuned-model", torch_dtype=torch.float16, device_map=DEVICE)
 
 hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/projection.pt", local_dir='../')
 hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/special_embeddings.pt", local_dir='../')
@@ -28,7 +28,7 @@ special_embs = torch.load("../OmniMistral-v1_1/special_embeddings.pt", map_locat
 
 codetr = CoDETRVisionTower("microsoft/conditional-detr-resnet-50")
 codetr.load_model()
-codetr = codetr.to(device=DEVICE, dtype=torch.bfloat16)
+codetr = codetr.to(device=DEVICE, dtype=torch.float16)
 
 
 def gen_answer(model, tokenizer, clip, projection, query, special_embs, image=None):
@@ -56,8 +56,8 @@ def gen_answer(model, tokenizer, clip, projection, query, special_embs, image=No
         prompt_ids = tokenizer.encode(f"{PROMPT}", add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
         question_ids = tokenizer.encode(query, add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
 
-        prompt_embeddings = model.model.embed_tokens(prompt_ids).to(torch.bfloat16)
-        question_embeddings = model.model.embed_tokens(question_ids).to(torch.bfloat16)
+        prompt_embeddings = model.model.embed_tokens(prompt_ids).to(torch.float16)
+        question_embeddings = model.model.embed_tokens(question_ids).to(torch.float16)
 
         embeddings = torch.cat(
             [
@@ -70,7 +70,7 @@ def gen_answer(model, tokenizer, clip, projection, query, special_embs, image=No
                 special_embs['BOT'][None, None, ...]
             ],
             dim=1,
-        ).to(dtype=torch.bfloat16, device=DEVICE)
+        ).to(dtype=torch.float16, device=DEVICE)
         out = model.generate(inputs_embeds=embeddings, **gen_params)
     out = out[:, 1:]
     generated_texts = tokenizer.batch_decode(out)[0]
