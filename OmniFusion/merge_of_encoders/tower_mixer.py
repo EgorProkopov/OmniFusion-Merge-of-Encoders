@@ -25,8 +25,6 @@ class MLPMixer(nn.Module):
             nn.Linear(self.in_dim, self.out_dim), nn.GELU(), nn.Linear(out_dim, out_dim)
         )
 
-    def forward(self, x1: torch.Tensor, x2: torch.Tensor) -> torch.Tensor:
-        x = torch.cat((x1, x2), dim=1)
-        # assert x.shape[1] == x1.shape[1] + x2.shape[1]
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         out = self.mlp(x)
         return out
