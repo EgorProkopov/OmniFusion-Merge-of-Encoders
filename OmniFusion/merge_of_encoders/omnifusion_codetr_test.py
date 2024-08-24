@@ -50,9 +50,9 @@ def gen_answer(model, tokenizer, clip, projection, query, special_embs, image=No
     }
     with torch.no_grad():
         image_features = clip.image_processor(image, return_tensors='pt')
-        image_embedding = clip(image_features['pixel_values']).to(device=DEVICE, dtype=torch.bfloat16)
+        image_embedding = clip(image_features['pixel_values']).to(device=DEVICE, dtype=torch.float16)
 
-        projected_vision_embeddings = projection(image_embedding).to(device=DEVICE, dtype=torch.bfloat16)
+        projected_vision_embeddings = projection(image_embedding).to(device=DEVICE, dtype=torch.float16)
         prompt_ids = tokenizer.encode(f"{PROMPT}", add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
         question_ids = tokenizer.encode(query, add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
 
