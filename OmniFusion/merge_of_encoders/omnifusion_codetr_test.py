@@ -19,7 +19,7 @@ model = AutoModelForCausalLM.from_pretrained("AIRI-Institute/OmniFusion", subfol
 
 hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/projection.pt", local_dir='../')
 hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/special_embeddings.pt", local_dir='../')
-clip_projection = torch.load("../OmniMistral-v1_1/projection.pt", map_location=DEVICE)
+clip_projection = torch.load("../OmniMistral-v1_1/projection.pt", map_location=DEVICE, dtype=torch.float32)
 mlp_projection = MLPMixer(in_dim=256, out_dim=256)
 mlp_projection = mlp_projection.to(DEVICE)
 special_embs = torch.load("../OmniMistral-v1_1/special_embeddings.pt", map_location=DEVICE)
