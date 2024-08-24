@@ -21,6 +21,7 @@ hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/
 hf_hub_download(repo_id="AIRI-Institute/OmniFusion", filename="OmniMistral-v1_1/special_embeddings.pt", local_dir='../')
 clip_projection = torch.load("../OmniMistral-v1_1/projection.pt", map_location=DEVICE)
 mlp_projection = MLPMixer(in_dim=256, out_dim=256)
+mlp_projection = mlp_projection.to(DEVICE)
 special_embs = torch.load("../OmniMistral-v1_1/special_embeddings.pt", map_location=DEVICE)
 
 clip = CLIPVisionTower("openai/clip-vit-large-patch14-336")
