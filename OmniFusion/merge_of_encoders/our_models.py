@@ -18,8 +18,8 @@ class CoDETRVisionTower(nn.Module):
             self.cfg_only = ConditionalDetrConfig.from_pretrained(self.vision_tower_name)
 
     def load_model(self):
-        self.image_processor = ConditionalDetrImageProcessor.from_pretrained(self.vision_tower_name)
-        self.vision_tower = ConditionalDetrModel.from_pretrained(self.vision_tower_name)
+        self.image_processor = ConditionalDetrImageProcessor.from_pretrained(self.vision_tower_name, dtype=self.dtype)
+        self.vision_tower = ConditionalDetrModel.from_pretrained(self.vision_tower_name, dtype=self.dtype)
         self.vision_tower.requires_grad_(False)
 
         self.is_loaded = True
