@@ -57,11 +57,12 @@ def gen_answer(model, tokenizer, clip, codetr, clip_projection, codetr_projectio
         codetr_image_features = codetr.image_processor(image, return_tensors='pt')
         codetr_image_embedding = codetr(codetr_image_features['pixel_values']).to(device=DEVICE, dtype=torch.float32)
 
+        batch_size, tockens_num, embeddnings_dim = codetr_image_embedding.shape
+        codetr_image_embedding = torch.reshape(codetr_image_features, (batch_size, tockens_num // 16, tockens_num * 16))
+
         clip_image_embedding = clip_projection(clip_image_embedding)
         codetr_image_embedding = codetr_projection(codetr_image_embedding)
 
-        batch_size, tockens_num, embeddnings_dim = codetr_image_embedding.shape
-        codetr_image_embedding = torch.reshape(codetr_image_features, (batch_size, tockens_num // 16, tockens_num * 16))
 
         prompt_ids = tokenizer.encode(f"{PROMPT}", add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
         question_ids = tokenizer.encode(query, add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
