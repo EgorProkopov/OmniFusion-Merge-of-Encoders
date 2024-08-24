@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from transformers import ConditionalDetrImageProcessor, ConditionalDetrModel, ConditionalDetrConfig
 
+
 class CoDETRVisionTower(nn.Module):
     def __init__(self, vision_tower, delay_load=False):
         super().__init__()
@@ -9,7 +10,6 @@ class CoDETRVisionTower(nn.Module):
         self.is_loaded = False
 
         self.vision_tower_name = vision_tower
-        self.select_layer = -2 #TODO: change value for DETR
         self.select_feature = 'patch'
 
         if not delay_load:
@@ -25,7 +25,7 @@ class CoDETRVisionTower(nn.Module):
         self.is_loaded = True
 
     def feature_select(self, image_forward_outs):
-        image_features = image_forward_outs.hidden_states[self.select_layer]
+        image_features = image_forward_outs.encoder_last_hidden_state
         if self.select_feature == 'patch':
             image_features = image_features[:, 1:]
         elif self.select_feature == 'cls_patch':
