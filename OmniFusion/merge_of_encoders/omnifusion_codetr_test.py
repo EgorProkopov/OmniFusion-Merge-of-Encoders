@@ -58,7 +58,7 @@ def gen_answer(model, tokenizer, clip, codetr, clip_projection, codetr_projectio
         codetr_image_embedding = codetr(codetr_image_features['pixel_values']).to(device=DEVICE, dtype=torch.float32)
 
         batch_size, tockens_num, embeddnings_dim = codetr_image_embedding.shape
-        codetr_image_embedding = torch.reshape(codetr_image_features, (batch_size, tockens_num // 16, tockens_num * 16))
+        codetr_image_embedding = codetr_image_features.reshape((batch_size, tockens_num // 16, embeddnings_dim * 16))
 
         clip_image_embedding = clip_projection(clip_image_embedding)
         codetr_image_embedding = codetr_projection(codetr_image_embedding)
