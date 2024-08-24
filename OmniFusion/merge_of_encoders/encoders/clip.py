@@ -2,17 +2,7 @@ import torch
 from torch import nn
 from transformers import CLIPVisionModel, CLIPVisionConfig, CLIPImageProcessor
 
-class VisualToGPTMapping(nn.Module):
-    def __init__(self, visual_emb_dim, gpt_emb_dim, num_gpt_embs, num_heads):
-        super(VisualToGPTMapping, self).__init__()
-        self.transformer_layer = nn.TransformerEncoderLayer(d_model=visual_emb_dim, nhead=num_heads, batch_first=True, norm_first=False)
-        self.linear = nn.Linear(visual_emb_dim, gpt_emb_dim)
-        self.n_embeddings = num_gpt_embs
-        self.embedding_dim = gpt_emb_dim
-    def forward(self, visual_embs):
-        out = self.transformer_layer(visual_embs)
-        out = self.linear(out).view(-1, self.n_embeddings, self.embedding_dim)
-        return out
+
 
 
 class CLIPVisionTower(nn.Module):
