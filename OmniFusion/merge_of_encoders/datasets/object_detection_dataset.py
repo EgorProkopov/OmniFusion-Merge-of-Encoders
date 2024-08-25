@@ -21,6 +21,8 @@ class COCOODImageCaptioning(Dataset):
             text_captioning = f"There is no objects on this image"
             return text_captioning
 
+        # TODO: find category name
+
         biggest_area = 0
         biggest_object = None
         for bbox, category, area in zip(bboxes_list, categories_list, areas_list):
@@ -30,7 +32,9 @@ class COCOODImageCaptioning(Dataset):
             y1, y2 = y1 / height_scale, y2 / height_scale
             area = area / (width_scale * height_scale)
 
-            object_description = f"the {category} is in a part of an image starting from the coordinates at the lower-left corner ({x1}, {y1}) and ending at the upper-right corner ({x2}, {y2}), the area is {area}, "
+            object_description = (f"the {category} is in a part of an image starting "
+                                  f"from the coordinates at the lower-left corner ({x1}, {y1}) "
+                                  f"and ending at the upper-right corner ({x2}, {y2}), the area is {area}, ")
             if area > biggest_area:
                 biggest_area = area
                 biggest_object = category
