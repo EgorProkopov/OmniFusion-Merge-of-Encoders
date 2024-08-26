@@ -126,7 +126,7 @@ if __name__ == "__main__":
     with open(args.config, 'r') as config_file:
         config_dict = json.load(config_file)
     cfg = Config(**config_dict)
-    
+
     ### Define models
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_ckp, use_fast=False)
     unk_id = tokenizer.encode("<unk>", add_special_tokens=False)[0]
@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     clip = CLIPVisionTower("openai/clip-vit-large-patch14-336")
     clip.load_model()
-    clip = clip.to(dtype=torch.DTYPE)
+    clip = clip.to(dtype=DTYPE)
 
     projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=DTYPE)
     projection.transformer_layer.norm_first = False
