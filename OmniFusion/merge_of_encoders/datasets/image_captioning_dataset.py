@@ -100,7 +100,7 @@ class ImageCaptioning(Dataset):
             else:
                 mask += text_tokens.shape[-1] * [True]
 
-        tokens = torch.cat(tokens.append(self.tokenizer.eos_token), dim=-1)[0]
+        tokens = torch.cat(tokens, dim=-1)[0]
         mask = torch.tensor(mask, dtype=bool)
         return image, tokens, mask, positions
 
