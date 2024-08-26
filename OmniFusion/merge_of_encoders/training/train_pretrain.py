@@ -111,6 +111,9 @@ class Model_pl(pl.LightningModule):
         loss = self.loss_fct(logits.view(-1, self.n_embeddings), labels.view(-1)).mean()
             
         self.log("my_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+        if batch_idx % 25000 == 0:
+            torch.save(self.projection, f"ckpts/{self.cfg.exp_name}/{batch_idx}/projection.pt")
+            torch.save(self.special_embs, f"ckpts/{self.cfg.exp_name}/{batch_idx}/special_embeddings.pt")
         return loss
 
     def train_dataloader(self):

@@ -78,7 +78,6 @@ def gen_answer(model, tokenizer, clip, codetr, clip_projection, codetr_projectio
         codetr_image_embedding = codetr(codetr_image_features['pixel_values']).to(device=DEVICE, dtype=DTYPE)
 
         clip_image_embedding = clip_projection(clip_image_embedding)
-        print(clip_image_embedding.shape)
         codetr_image_embedding = codetr_projection(codetr_image_embedding)
 
         prompt_ids = tokenizer.encode(f"{PROMPT}", add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
