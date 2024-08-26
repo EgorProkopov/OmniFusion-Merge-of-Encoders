@@ -1,7 +1,11 @@
 .idea
 .env
+.pt
 __pycache__
 #my empty file for local aims
 .py 
+
+# logs
 wandb
+ckpts
 
