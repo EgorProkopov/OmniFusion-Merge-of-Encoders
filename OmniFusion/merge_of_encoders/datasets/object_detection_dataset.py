@@ -1,13 +1,11 @@
-import albumentations as albu
-import torch
 from torch.utils.data import Dataset
-import transformers
 
 from datasets import load_dataset
 
 
 def download_coco():
     return load_dataset("detection-datasets/coco")
+
 
 class COCOODImageCaptioning(Dataset):
     def __init__(self, data):
