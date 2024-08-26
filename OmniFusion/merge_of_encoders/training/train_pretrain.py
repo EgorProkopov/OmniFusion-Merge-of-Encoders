@@ -144,7 +144,7 @@ if __name__ == "__main__":
     projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=DTYPE)
     projection.transformer_layer.norm_first = False
     
-    special_embs = initialize_special_embs(cfg)
+    special_embs = initialize_special_embs(emb_dim=cfg.emb_dim, device='cpu', dtype=DTYPE)
     freeze(model), freeze(clip)
 
     train_dataset = get_dataset(cfg, tokenizer, clip.image_processor)
