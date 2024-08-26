@@ -47,8 +47,6 @@ class COCOODImageCaptioning(Dataset):
             text_captioning = f"There is no objects on this image"
             return text_captioning
 
-        # TODO: find category name
-
         biggest_area = 0
         biggest_object = None
         for bbox, category, area in zip(bboxes_list, categories_list, areas_list):
