@@ -89,7 +89,7 @@ class ImageCaptioning(Dataset):
 
             text = conversation['value']
             if conversation['from'] == 'human':
-                text = text.replace("<image>", self._sample_question())
+                text = text.replace("<image>", self._sample_question()[0])
             else:
                 text += self.tokenizer.eos_token
 
