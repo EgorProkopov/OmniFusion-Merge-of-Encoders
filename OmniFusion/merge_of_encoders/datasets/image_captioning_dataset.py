@@ -2,7 +2,6 @@ import numpy as np
 from PIL import Image
 import torch
 from torch.utils.data import Dataset
-import albumentations as albu
 import transformers
 
 from datasets import load_dataset
