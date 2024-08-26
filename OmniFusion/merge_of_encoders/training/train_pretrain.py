@@ -112,8 +112,8 @@ class Model_pl(pl.LightningModule):
             
         self.log("my_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         if batch_idx % 25000 == 0:
-            if not os.path.exists(f"ckpts/{self.cfg.exp_name}/{batch_idx}"):
-                os.mkdir(f"ckpts/{self.cfg.exp_name}/{batch_idx}")
+            # if not os.path.exists(f"ckpts/{self.cfg.exp_name}/{batch_idx}"):
+            os.mkdir(f"ckpts/{self.cfg.exp_name}/{batch_idx}", exist_ok = True)
             torch.save(self.projection, f"ckpts/{self.cfg.exp_name}/{batch_idx}/projection.pt")
             torch.save(self.special_embs, f"ckpts/{self.cfg.exp_name}/{batch_idx}/special_embeddings.pt")
         return loss
