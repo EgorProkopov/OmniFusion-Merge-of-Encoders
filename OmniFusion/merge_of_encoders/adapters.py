@@ -27,7 +27,7 @@ class VisualToGPTMapping(nn.Module):
         self.embedding_dim = gpt_emb_dim
     def forward(self, visual_embs):
         out = self.transformer_layer(visual_embs)
-        print(visual_embs.shape)
+        print(out.shape)
         out = self.linear(out).view(-1, self.n_embeddings, self.embedding_dim)
         return out
 
