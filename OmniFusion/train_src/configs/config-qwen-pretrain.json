@@ -1,7 +1,7 @@
 {
     "exp_name": "qwen2-default-pretrain",
     "model_ckp": "Qwen/Qwen2-0.5B",
-    "n_epochs": 2,
+    "n_epochs": 1,
     "grad_accum": 4,
     "learning_rate": 1e-2,
     "prompt": "This is a dialog with AI assistant.\n",
