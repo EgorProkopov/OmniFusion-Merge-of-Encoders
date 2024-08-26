@@ -106,7 +106,7 @@ class ImageCaptioning(Dataset):
 
 
 def get_dataset(cfg, tokenizer, image_processor):
-    data = load_llava_recap_558k()
+    data = load_llava_recap_558k()['train']
     return ImageCaptioning(cfg, data, tokenizer, image_processor)
 
 
