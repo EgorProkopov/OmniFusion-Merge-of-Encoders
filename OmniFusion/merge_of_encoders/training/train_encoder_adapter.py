@@ -85,10 +85,17 @@ class Model_pl(pl.LightningModule):
         torch.save(self.special_embs, f"ckpts/{self.cfg.exp_name}/special_embeddings.pt")
 
     def training_step(self, batch, batch_idx):
-        images, images_mask, labels, mask, positions = batch
+        clip_embs, encoder_embs, images_mask, labels, mask, positions = batch
         if images_mask.sum() > 0:
-            image_embedding = self.clip(images).to(dtype=self.DTYPE)  # preprocessing!!!
-            projected_vision_embeddings = self.projection(image_embedding)
+            clip_embedding = self.clip(clip_embs).to(dtype=self.DTYPE)  # preprocessing!!!
+            encoder_embedding = self.encoder(encoder_embs).to(dtype=self.DTYPE)
+
+            projected_clip_embeddings = self.projection(clip_embedding)
+            projected_encoder_embeddings = self.encoder_projection(encoder_embedding)
+
+            projected_vision_embeddings = torch.cat([
+                projected_clip_embeddings, projected_encoder_embeddings
+            ], dim=-1)
 
         embeddings = self.model.model.embed_tokens(labels)
         img_idx_counter = 0
@@ -119,12 +126,11 @@ class Model_pl(pl.LightningModule):
 
         self.log("my_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         if batch_idx % 25000 == 0:
-            # if not os.path.exists(f"ckpts/{self.cfg.exp_name}/{batch_idx}"):
-            # os.mkdir(f"ckpts/{self.cfg.exp_name}/{batch_idx}", exist_ok = True)
             os.makedirs(f"ckpts/{self.cfg.exp_name}/{batch_idx}", exist_ok=True)
             torch.save(self.projection, f"ckpts/{self.cfg.exp_name}/{batch_idx}/projection.pt")
             torch.save(self.special_embs, f"ckpts/{self.cfg.exp_name}/{batch_idx}/special_embeddings.pt")
             torch.save(self.encoder_projection, f"ckpts/{self.cfg.exp_name}/{batch_idx}/{self.encoder_name}_projection.pt")
+
         return loss
 
     def train_dataloader(self):
@@ -156,16 +162,18 @@ if __name__ == "__main__":
     clip.load_model()
     clip = clip.to(dtype=DTYPE)
 
-    projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=DTYPE)
-    projection.transformer_layer.norm_first = False
+    encoder = ...  # TODO: codetr, plots, ocr, etc.
+
+    clip_projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=DTYPE)
+    clip_projection.transformer_layer.norm_first = False
 
     special_embs = initialize_special_embs(emb_dim=cfg.emb_dim, device='cpu', dtype=DTYPE)
-    freeze(model), freeze(clip)
+    freeze(model), freeze(clip), freeze(encoder), freeze(clip)
 
     train_dataset = get_dataset(cfg, tokenizer, clip.image_processor)
     collate_function = get_collate_function(cfg)
 
-    module = Model_pl(cfg, clip, special_embs, model, projection, train_dataset, collate_function)
+    module = Model_pl(cfg, clip, special_embs, model, clip_projection, train_dataset, collate_function)
     trainer = pl.Trainer(devices=[0, 2, 3], max_epochs=cfg.n_epochs, logger=logger,
                          accumulate_grad_batches=cfg.grad_accum)
     trainer.fit(module)
