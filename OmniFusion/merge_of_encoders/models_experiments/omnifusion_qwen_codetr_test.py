@@ -38,18 +38,18 @@ clip_projection = clip_projection.to(device=DEVICE, dtype=DTYPE)
 codetr_projection = VisualToGPTMapping(
         visual_emb_dim=256,
         gpt_emb_dim=EMB_DIM,
-        num_gpt_embs=576,
+        num_gpt_embs=256,
         num_heads=4
     )
 codetr_projection = codetr_projection.to(device=DEVICE, dtype=DTYPE)
 
 # special_embs = torch.load("../OmniMistral-v1_1/special_embeddings.pt", map_location=DEVICE)
 special_embs = initialize_special_embs(emb_dim=EMB_DIM, dtype=DTYPE, device=DEVICE)
-clip = CLIPVisionTower("openai/clip-vit-large-patch14-336")
+clip = CLIPVisionTower("openai/clip-vit-large-patch14-336", patch='patch')
 clip.load_model()
 clip = clip.to(device=DEVICE, dtype=DTYPE)
 
-codetr = CoDETRVisionTower("microsoft/conditional-detr-resnet-50")
+codetr = CoDETRVisionTower("microsoft/conditional-detr-resnet-50", patch='cls_patch')
 codetr.load_model()
 codetr = codetr.to(device=DEVICE, dtype=DTYPE)
 

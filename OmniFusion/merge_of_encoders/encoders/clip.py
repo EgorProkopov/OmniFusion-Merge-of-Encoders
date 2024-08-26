@@ -6,14 +6,14 @@ from transformers import CLIPVisionModel, CLIPVisionConfig, CLIPImageProcessor
 
 
 class CLIPVisionTower(nn.Module):
-    def __init__(self, vision_tower, delay_load=False):
+    def __init__(self, vision_tower, delay_load=False, patch='patch'):
         super().__init__()
 
         self.is_loaded = False
 
         self.vision_tower_name = vision_tower
         self.select_layer = -2
-        self.select_feature = 'patch'
+        self.select_feature = patch
 
         if not delay_load:
             self.load_model()
