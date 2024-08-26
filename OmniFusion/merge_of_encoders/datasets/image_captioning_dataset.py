@@ -1,3 +1,4 @@
+import numpy as np
 from PIL import Image
 import torch
 from torch.utils.data import Dataset
@@ -26,13 +27,27 @@ class ImageCaptioning(Dataset):
         self.transforms = transforms
         self.augmentation = augmentation
 
+    def _sample_question(self):
+        questions_pool = [
+            "Describe this image.",
+            "Describe the image.",
+
+            "Whats happening on this image?",
+            "Give the description of this image.",
+            "What objects and people are visible on this image?",
+            "Describe objects and people that are visible on this image.",
+            "What kind of scene is this?",
+            "Give the explanation of this image."
+        ]
+        question = np.random.choice(questions_pool, size=1, replace=False)
+        return question
+
     def __len__(self):
         return self.data.num_rows
 
     def __getitem__(self, item):
         data_item = self.data[item]
         tokens = []
-        masks = []
         positions = []
 
         prompt_tokens = self.tokenizer.encode(f"{self.cfg.prompt}", add_special_tokens=False, return_tensors="pt")
@@ -42,8 +57,7 @@ class ImageCaptioning(Dataset):
 
         image = None
         if 'image' in data_item.keys():
-            image_path = f"{self.cfg.image_folder}/{data_item['image']}"
-            image = self.image_processor((Image.open(image_path)), return_tensors='pt')['pixel_values'][0]
+            image = self.image_processor(data_item['image'], return_tensors='pt')['pixel_values'][0]
 
             tokens.append(
                 torch.tensor(
@@ -74,6 +88,11 @@ class ImageCaptioning(Dataset):
             )
 
             text = conversation['value']
+            if conversation['from'] == 'human':
+                text = text.replace("<image>", self._sample_question())
+            else:
+                text += self.tokenizer.eos_token
+
             text_tokens = self.tokenizer.encode(text, add_special_tokens=False, return_tensors="pt")
             tokens.append(text_tokens)
             if conversation['from'] == 'human':
@@ -84,6 +103,34 @@ class ImageCaptioning(Dataset):
         tokens = torch.cat(tokens.append(self.tokenizer.eos_token), dim=-1)[0]
         mask = torch.tensor(mask, dtype=bool)
         return image, tokens, mask, positions
+
+
+def get_dataset(cfg, tokenizer, image_processor):
+    data = load_llava_recap_558k()
+    return ImageCaptioning(cfg, data, tokenizer, image_processor)
+
+
+def get_collate_function(cfg):
+    def colate_fn(data):
+        images, tokens, masks, positions = zip(*data)
+
+        images_mask = torch.tensor([True if image is not None else False for image in images], dtype=bool)
+        if images_mask.sum() > 0:
+            images = torch.stack([image for image in images if image is not None])
+        else:
+            images = None
+        tokens = list(tokens)
+        masks = list(masks)
+        positions = list(positions)
+        max_len = max([token.shape[-1] for token in tokens])
+        for i in range(len(tokens)):
+            pad_len = max_len - tokens[i].shape[-1]
+            masks[i] = torch.cat([masks[i], torch.tensor(pad_len*[False], dtype=bool)], dim=0)
+            tokens[i] = torch.cat([tokens[i], torch.tensor(pad_len*[cfg.pad_id], dtype=int)], dim=0)
+        masks = torch.stack(masks)
+        tokens = torch.stack(tokens)
+        return images, images_mask, tokens, masks, positions
+    return colate_fn
 
 
 if __name__ == "__main__":

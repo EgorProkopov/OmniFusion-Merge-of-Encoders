@@ -1,0 +1,16 @@
+{
+    "exp_name": "qwen2-default-pretrain",
+    "model_ckp": "Qwen/Qwen2-0.5B",
+    "n_epochs": 2,
+    "grad_accum": 4,
+    "learning_rate": 1e-2,
+    "prompt": "This is a dialog with AI assistant.\n",
+    "num_workers": 16,
+    "batch_size": 32,
+    "emb_dim": 896,
+    "max_context_len": 2048,
+    "vision_emb_num": 576,
+    "projection_num_head": 4,
+    "json_data_path": "path_to_your_dataset.json",
+    "image_folder": "path_to_your_images_folder"
+}
