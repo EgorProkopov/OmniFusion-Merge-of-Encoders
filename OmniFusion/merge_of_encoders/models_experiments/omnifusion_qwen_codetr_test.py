@@ -38,7 +38,7 @@ clip_projection = clip_projection.to(device=DEVICE, dtype=DTYPE)
 codetr_projection = VisualToGPTMapping(
         visual_emb_dim=256,
         gpt_emb_dim=EMB_DIM,
-        num_gpt_embs=256,
+        num_gpt_embs=800,
         num_heads=4
     )
 codetr_projection = codetr_projection.to(device=DEVICE, dtype=DTYPE)
