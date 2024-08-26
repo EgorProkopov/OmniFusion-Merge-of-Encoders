@@ -1,4 +1,7 @@
 .idea
+.env
 __pycache__
-.py 
 #my empty file for local aims
+.py 
+wandb
+

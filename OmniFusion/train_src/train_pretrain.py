@@ -6,39 +6,48 @@ import torch
 import torch.nn as nn
 import numpy as np
 import pytorch_lightning as pl
+from dotenv import load_dotenv  # Новый импорт
 
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers.optimization import Adafactor, AdafactorSchedule, get_cosine_schedule_with_warmup
+from transformers.optimization import Adafactor, get_cosine_schedule_with_warmup
 from torch.utils.data import DataLoader, Dataset
-from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.loggers import CSVLogger, WandbLogger
 
 from models import VisualToGPTMapping, CLIPVisionTower, initialize_special_embs
 from dataset import get_dataset, get_collate_function
-        
+
+load_dotenv() 
+wandb_api_key = os.getenv("WANDB_API_KEY")
+
+if wandb_api_key:
+    os.environ["WANDB_API_KEY"] = wandb_api_key
+else:
+    raise ValueError("WANDB_API_KEY не найден в .env файле")
 
 class Config:
     def __init__(self, **kwargs):
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             if isinstance(v, dict):
                 setattr(self, k, Config(**v))
             else:
                 setattr(self, k, v)
-    
+
     def __str__(self):
         return '\n'.join(f'{key}: {value}' for key, value in self.__dict__.items())
 
     def __repr__(self):
         return self.__str__()
 
+
 def freeze(model):
     for p in model.parameters():
         p.requires_grad_(False)
 
+
 def unfreeze(model):
     for p in model.parameters():
         p.requires_grad_(True)
-        
 
 
 class Model_pl(pl.LightningModule):
@@ -55,85 +64,78 @@ class Model_pl(pl.LightningModule):
         self.collate_function = collate_function
         self.n_iters = len(self.train_dataloader())
         self.save_hyperparameters('cfg')
-        # self.automatic_optimization = False
-        
+
     def configure_optimizers(self):
-        
         optimizer = Adafactor(list(self.special_embs.values()) + list(self.projection.parameters()), lr=self.cfg.learning_rate, relative_step=False)
         scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=self.n_iters // self.cfg.grad_accum * 0.01, num_training_steps=self.n_iters // self.cfg.grad_accum)
         return {'optimizer': optimizer, 'lr_scheduler': {
             'scheduler': scheduler,
             'interval': 'step',
             'frequency': 1
-            
         }}
-    
 
     def on_train_epoch_end(self):
         torch.save(self.projection, f"ckpts/{self.cfg.exp_name}/projection.pt")
         torch.save(self.special_embs, f"ckpts/{self.cfg.exp_name}/special_embeddings.pt")
 
-        
     def training_step(self, batch, batch_idx):
         images, images_mask, labels, mask, positions = batch
         if images_mask.sum() > 0:
-            image_embedding = self.clip(images).to(dtype=torch.bfloat16) # preprocessing!!!
+            image_embedding = self.clip(images).to(dtype=torch.bfloat16)  # preprocessing!!!
             projected_vision_embeddings = self.projection(image_embedding)
-        
+
         embeddings = self.model.model.embed_tokens(labels)
         img_idx_counter = 0
         for i in range(len(embeddings)):
             for pos in positions[i]:
-                
                 if pos['type'] in self.special_embs.keys():
                     embeddings[i][pos['position']] = self.special_embs[pos['type']]
                 if pos['type'] == 'IMG':
                     embeddings[i][pos['position'][0]:pos['position'][1]] = projected_vision_embeddings[img_idx_counter]
                     img_idx_counter += 1
-        
+
         embeddings = embeddings[:, :self.cfg.max_context_len]
         labels = labels[:, :self.cfg.max_context_len]
         mask = mask[:, :self.cfg.max_context_len]
-        
+
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-            logits = self.model(inputs_embeds=embeddings.to(dtype = torch.bfloat16), output_hidden_states=True).get("logits")[:, :-1]
-        
+            logits = self.model(inputs_embeds=embeddings.to(dtype=torch.bfloat16), output_hidden_states=True).get("logits")[:, :-1]
+
         labels = labels[:, 1:]
         mask = mask[:, 1:]
-          
+
         logits = logits[mask].contiguous().float()
         labels = labels[mask].contiguous()
 
-        
         loss = self.loss_fct(logits.view(-1, self.n_embeddings), labels.view(-1)).mean()
-            
+
         self.log("my_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
-        
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.cfg.batch_size, collate_fn=self.collate_function, num_workers=self.cfg.num_workers, shuffle=True)
 
 
-
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='./configs/config-pretrain.json')
+    parser.add_argument('--config', type=str, default='./configs/config-qwen-pretrain.json')
     args = parser.parse_args()
     with open(args.config, 'r') as config_file:
         config_dict = json.load(config_file)
     cfg = Config(**config_dict)
-    
+
     ### Define models
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_ckp, use_fast=False)
     unk_id = tokenizer.encode("<unk>", add_special_tokens=False)[0]
     cfg.pad_id = unk_id
     os.makedirs(f"ckpts/{cfg.exp_name}", exist_ok=True)
+
+    # Initialize loggers
     logger = CSVLogger("ckpts", name=cfg.exp_name)
+    wandb_logger = WandbLogger(project="merge_of_encoders", name=cfg.exp_name)
+
     cfg.exp_name = os.path.join(cfg.exp_name, f'version_{logger.version}')
-    
-    
+
     model = AutoModelForCausalLM.from_pretrained(cfg.model_ckp, torch_dtype=torch.bfloat16, device_map='cpu')
 
     clip = CLIPVisionTower("openai/clip-vit-large-patch14-336")
@@ -142,7 +144,7 @@ if __name__ == "__main__":
 
     projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=torch.bfloat16)
     projection.transformer_layer.norm_first = False
-    
+
     special_embs = initialize_special_embs(cfg)
     freeze(model), freeze(clip)
 
@@ -150,5 +152,6 @@ if __name__ == "__main__":
     collate_function = get_collate_function(cfg)
 
     module = Model_pl(cfg, clip, special_embs, model, projection, train_dataset, collate_function)
-    trainer = pl.Trainer(devices=8, max_epochs=cfg.n_epochs, logger=logger, accumulate_grad_batches=cfg.grad_accum)
+
+    trainer = pl.Trainer(devices=8, max_epochs=cfg.n_epochs, logger=[logger, wandb_logger], accumulate_grad_batches=cfg.grad_accum)
     trainer.fit(module)
