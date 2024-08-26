@@ -33,20 +33,25 @@ clip_projection = VisualToGPTMapping(
         num_gpt_embs=576,
         num_heads=4
     )
-clip_projection = clip_projection.to(dtype=torch.float32)
+clip_projection = clip_projection.to(device=DEVICE, dtype=DTYPE)
 
-mlp_projection = MLPAdapter(in_dim=4096, out_dim=4096)
-mlp_projection = mlp_projection.to(DEVICE)
+codetr_projection = VisualToGPTMapping(
+        visual_emb_dim=256,
+        gpt_emb_dim=EMB_DIM,
+        num_gpt_embs=576,
+        num_heads=4
+    )
+codetr_projection = codetr_projection.to(device=DEVICE, dtype=DTYPE)
 
 # special_embs = torch.load("../OmniMistral-v1_1/special_embeddings.pt", map_location=DEVICE)
 special_embs = initialize_special_embs(emb_dim=EMB_DIM, dtype=DTYPE, device=DEVICE)
 clip = CLIPVisionTower("openai/clip-vit-large-patch14-336")
 clip.load_model()
-clip = clip.to(device=DEVICE, dtype=torch.float32)
+clip = clip.to(device=DEVICE, dtype=DTYPE)
 
 codetr = CoDETRVisionTower("microsoft/conditional-detr-resnet-50")
 codetr.load_model()
-codetr = codetr.to(device=DEVICE, dtype=torch.float32)
+codetr = codetr.to(device=DEVICE, dtype=DTYPE)
 
 
 def gen_answer(model, tokenizer, clip, codetr, clip_projection, codetr_projection, query, special_embs, image=None):
@@ -68,22 +73,18 @@ def gen_answer(model, tokenizer, clip, codetr, clip_projection, codetr_projectio
     }
     with torch.no_grad():
         clip_image_features = clip.image_processor(image, return_tensors='pt')
-        clip_image_embedding = clip(clip_image_features['pixel_values']).to(device=DEVICE, dtype=torch.float32)
+        clip_image_embedding = clip(clip_image_features['pixel_values']).to(device=DEVICE, dtype=DTYPE)
         codetr_image_features = codetr.image_processor(image, return_tensors='pt')
-        codetr_image_embedding = codetr(codetr_image_features['pixel_values']).to(device=DEVICE, dtype=torch.float32)
-
-        batch_size, tockens_num, embeddnings_dim = codetr_image_embedding.shape
-        codetr_image_embedding = codetr_image_features.reshape((batch_size, tockens_num // 16, embeddnings_dim * 16))
+        codetr_image_embedding = codetr(codetr_image_features['pixel_values']).to(device=DEVICE, dtype=DTYPE)
 
         clip_image_embedding = clip_projection(clip_image_embedding)
         codetr_image_embedding = codetr_projection(codetr_image_embedding)
 
-
         prompt_ids = tokenizer.encode(f"{PROMPT}", add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
         question_ids = tokenizer.encode(query, add_special_tokens=False, return_tensors="pt").to(device=DEVICE)
 
-        prompt_embeddings = model.model.embed_tokens(prompt_ids).to(torch.float32)
-        question_embeddings = model.model.embed_tokens(question_ids).to(torch.float32)
+        prompt_embeddings = model.model.embed_tokens(prompt_ids).to(dtype=DTYPE)
+        question_embeddings = model.model.embed_tokens(question_ids).to(dtype=DTYPE)
 
         embeddings = torch.cat(
             [
@@ -101,7 +102,7 @@ def gen_answer(model, tokenizer, clip, codetr, clip_projection, codetr_projectio
                 special_embs['BOT'][None, None, ...]
             ],
             dim=1,
-        ).to(dtype=torch.float32, device=DEVICE)
+        ).to(dtype=DTYPE, device=DEVICE)
         out = model.generate(inputs_embeds=embeddings, **gen_params)
     out = out[:, 1:]
     generated_texts = tokenizer.batch_decode(out)[0]
@@ -117,7 +118,7 @@ answer = gen_answer(
     clip,
     codetr,
     clip_projection=clip_projection,
-    codetr_projection=mlp_projection,
+    codetr_projection=codetr_projection,
     query=question,
     special_embs=special_embs,
     image=img
