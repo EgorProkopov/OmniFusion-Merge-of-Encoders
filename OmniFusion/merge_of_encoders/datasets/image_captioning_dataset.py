@@ -8,14 +8,14 @@ from datasets import load_dataset, DatasetDict
 
 
 def load_llava_recap_558k():
-    ds = load_dataset("lmms-lab/LLaVA-ReCap-558K")
-    cropped_train = ds['train'].select(range(10))
-
-    # Create a new DatasetDict with the cropped train dataset
-    cropped_dataset_dict = DatasetDict({
-        'train': cropped_train
-    })
-    return cropped_dataset_dict
+    return load_dataset("lmms-lab/LLaVA-ReCap-558K")
+    # cropped_train = ds['train'].select(range(10))
+    #
+    # # Create a new DatasetDict with the cropped train dataset
+    # cropped_dataset_dict = DatasetDict({
+    #     'train': cropped_train
+    # })
+    # return cropped_dataset_dict
 
 class ImageCaptioning(Dataset):
     def __init__(
