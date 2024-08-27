@@ -1,5 +1,5 @@
 import torch
-from PIL.Image import Image
+from PIL import Image
 from torch import nn
 from transformers import CLIPVisionModel, CLIPVisionConfig, CLIPImageProcessor
 
