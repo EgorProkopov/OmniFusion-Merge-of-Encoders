@@ -1,4 +1,5 @@
 import random
+import sys
 import argparse
 import json
 import os
@@ -7,13 +8,17 @@ import torch.nn as nn
 import numpy as np
 import pytorch_lightning as pl
 
+
+
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.optimization import Adafactor, AdafactorSchedule, get_cosine_schedule_with_warmup
 from torch.utils.data import DataLoader, Dataset
 from pytorch_lightning.loggers import CSVLogger
 
+sys.path.append('../../../')
 from OmniFusion.merge_of_encoders.encoders.clip import CLIPVisionTower
+from OmniFusion.merge_of_encoders.encoders.texify import TexifyVisionTower
 from OmniFusion.merge_of_encoders.encoders.utils import initialize_special_embs
 from OmniFusion.merge_of_encoders.adapters import VisualToGPTMapping
 from OmniFusion.merge_of_encoders.datasets.image_captioning_dataset import get_dataset, get_collate_function
@@ -141,8 +146,10 @@ class Model_pl(pl.LightningModule):
 if __name__ == "__main__":
     DTYPE = torch.float16
 
+
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='./configs/config-pretrain.json')
+    parser.add_argument('--config', type=str, default='./configs/config-qwen-pretrain.json')
     args = parser.parse_args()
     with open(args.config, 'r') as config_file:
         config_dict = json.load(config_file)
@@ -162,18 +169,27 @@ if __name__ == "__main__":
     clip.load_model()
     clip = clip.to(dtype=DTYPE)
 
-    encoder = ...  # TODO: codetr, plots, ocr, etc.
+    texify_encoder = TexifyVisionTower()  # TODO: codetr, plots, ocr, etc.
+    texify_encoder.load_model()
+    texify_encoder = texify_encoder.to(dtype=DTYPE)
 
     clip_projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=DTYPE)
     clip_projection.transformer_layer.norm_first = False
+    
+    texify_projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=DTYPE)
+    texify_projection.transformer_layer.norm_first = False
 
     special_embs = initialize_special_embs(emb_dim=cfg.emb_dim, device='cpu', dtype=DTYPE)
-    freeze(model), freeze(clip), freeze(encoder), freeze(clip)
+    freeze(model), freeze(clip), freeze(texify_encoder), freeze(clip)
 
     train_dataset = get_dataset(cfg, tokenizer, clip.image_processor)
     collate_function = get_collate_function(cfg)
 
-    module = Model_pl(cfg, clip, special_embs, model, clip_projection, train_dataset, collate_function)
+    module = Model_pl(cfg, clip, 
+                      texify_encoder,
+                      special_embs, model, clip_projection, 
+                      texify_projection, 'Texify',
+                      train_dataset, collate_function)
     trainer = pl.Trainer(devices=[0, 2, 3], max_epochs=cfg.n_epochs, logger=logger,
                          accumulate_grad_batches=cfg.grad_accum)
     trainer.fit(module)
