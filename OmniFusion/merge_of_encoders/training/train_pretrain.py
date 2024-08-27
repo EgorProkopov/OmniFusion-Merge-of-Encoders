@@ -149,7 +149,7 @@ if __name__ == "__main__":
     clip = clip.to(dtype=DTYPE)
 
     projection = MLPAdapter(1024, cfg.emb_dim).to(dtype=DTYPE)
-    projection.transformer_layer.norm_first = False
+    # projection.transformer_layer.norm_first = False
     
     special_embs = initialize_special_embs(emb_dim=cfg.emb_dim, device='cpu', dtype=DTYPE)
     freeze(model), freeze(clip)
