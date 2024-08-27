@@ -66,12 +66,13 @@ class Model_pl(pl.LightningModule):
         
         optimizer = Adafactor(list(self.special_embs.values()) + list(self.projection.parameters()), lr=self.cfg.learning_rate, relative_step=False)
         scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=self.n_iters // self.cfg.grad_accum * 0.01, num_training_steps=self.n_iters // self.cfg.grad_accum)
-        return {'optimizer': optimizer, 'lr_scheduler': {
-            'scheduler': scheduler,
-            'interval': 'step',
-            'frequency': 1
-            
-        }}
+        # return {'optimizer': optimizer, 'lr_scheduler': {
+        #     'scheduler': scheduler,
+        #     'interval': 'step',
+        #     'frequency': 1
+        #
+        # }}
+        return {'optimizer': optimizer}
 
     def on_train_epoch_end(self):
         torch.save(self.projection, f"ckpts/{self.cfg.exp_name}/projection.pt")
