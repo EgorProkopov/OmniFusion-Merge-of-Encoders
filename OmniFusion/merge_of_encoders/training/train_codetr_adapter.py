@@ -45,7 +45,12 @@ def unfreeze(model):
 
 
 class Model_pl(pl.LightningModule):
-    def __init__(self, cfg, clip, encoder, special_embs, model, clip_projection, encoder_projection, encoder_name, train_dataset, collate_function):
+    def __init__(
+            self, cfg, clip, encoder,
+            special_embs, model, clip_projection,
+            encoder_projection, encoder_name,
+            train_dataset, collate_function
+    ):
         super().__init__()
         self.cfg = cfg
         self.clip = clip
@@ -174,6 +179,7 @@ if __name__ == "__main__":
     projection.transformer_layer.norm_first = False
 
     clip_projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=DTYPE)
+    clip_projection.load_state_dict(torch.load(cfg.clip_adapter_ckp))
     clip_projection.transformer_layer.norm_first = False
 
     special_embs = initialize_special_embs(emb_dim=cfg.emb_dim, device='cpu', dtype=DTYPE)
@@ -183,9 +189,18 @@ if __name__ == "__main__":
     collate_function = get_collate_function(cfg)
 
 
-    module = Model_pl(cfg, clip, special_embs, model, clip_projection, train_dataset, collate_function)
+    module = Model_pl(
+        cfg=cfg, clip=clip, encoder=encoder,
+        special_embs=special_embs, model=model,
+        clip_projection=clip_projection, encoder_projection=projection,
+        encoder_name="codetr",
+        train_dataset=train_dataset, collate_function=collate_function
+    )
     
     # Use both CSVLogger and WandbLogger
-    trainer = pl.Trainer(devices=[0, 2, 3], max_epochs=cfg.n_epochs, logger=[logger, wandb_logger],
-                         accumulate_grad_batches=cfg.grad_accum)
+    trainer = pl.Trainer(
+        devices=[0, 2, 3], max_epochs=cfg.n_epochs,
+        logger=[logger, wandb_logger],
+        accumulate_grad_batches=cfg.grad_accum
+    )
     trainer.fit(module)
