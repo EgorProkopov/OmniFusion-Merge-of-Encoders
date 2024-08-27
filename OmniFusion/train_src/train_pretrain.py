@@ -12,18 +12,11 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.optimization import Adafactor, get_cosine_schedule_with_warmup
 from torch.utils.data import DataLoader, Dataset
-from pytorch_lightning.loggers import CSVLogger, WandbLogger
+from pytorch_lightning.loggers import CSVLogger
 
 from models import VisualToGPTMapping, CLIPVisionTower, initialize_special_embs
 from dataset import get_dataset, get_collate_function
 
-load_dotenv() 
-wandb_api_key = os.getenv("WANDB_API_KEY")
-
-if wandb_api_key:
-    os.environ["WANDB_API_KEY"] = wandb_api_key
-else:
-    raise ValueError("WANDB_API_KEY не найден в .env файле")
 
 class Config:
     def __init__(self, **kwargs):
@@ -132,7 +125,6 @@ if __name__ == "__main__":
 
     # Initialize loggers
     logger = CSVLogger("ckpts", name=cfg.exp_name)
-    wandb_logger = WandbLogger(project="merge_of_encoders", name=cfg.exp_name)
 
     cfg.exp_name = os.path.join(cfg.exp_name, f'version_{logger.version}')
 
@@ -153,5 +145,5 @@ if __name__ == "__main__":
 
     module = Model_pl(cfg, clip, special_embs, model, projection, train_dataset, collate_function)
 
-    trainer = pl.Trainer(devices=8, max_epochs=cfg.n_epochs, logger=[logger, wandb_logger], accumulate_grad_batches=cfg.grad_accum)
+    trainer = pl.Trainer(devices=8, max_epochs=cfg.n_epochs, logger=logger, accumulate_grad_batches=cfg.grad_accum)
     trainer.fit(module)

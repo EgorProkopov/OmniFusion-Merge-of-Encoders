@@ -11,7 +11,7 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.optimization import Adafactor, AdafactorSchedule, get_cosine_schedule_with_warmup
 from torch.utils.data import DataLoader, Dataset
-from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.loggers import CSVLogger, WandbLogger 
 
 from OmniFusion.merge_of_encoders.encoders.clip import CLIPVisionTower
 from OmniFusion.merge_of_encoders.encoders.utils import initialize_special_embs
@@ -153,7 +153,11 @@ if __name__ == "__main__":
     unk_id = tokenizer.encode("<unk>", add_special_tokens=False)[0]
     cfg.pad_id = unk_id
     os.makedirs(f"ckpts/{cfg.exp_name}", exist_ok=True)
+
+    # init loggers
     logger = CSVLogger("ckpts", name=cfg.exp_name)
+    wandb_logger = WandbLogger(project="merge_of_encoders", name=cfg.exp_name)
+
     cfg.exp_name = os.path.join(cfg.exp_name, f'version_{logger.version}')
 
     model = AutoModelForCausalLM.from_pretrained(cfg.model_ckp, torch_dtype=DTYPE, device_map='cpu')
@@ -174,6 +178,6 @@ if __name__ == "__main__":
     collate_function = get_collate_function(cfg)
 
     module = Model_pl(cfg, clip, special_embs, model, clip_projection, train_dataset, collate_function)
-    trainer = pl.Trainer(devices=[0, 2, 3], max_epochs=cfg.n_epochs, logger=logger,
+    trainer = pl.Trainer(devices=[0, 2, 3], max_epochs=cfg.n_epochs, logger=[logger, wandb_logger],
                          accumulate_grad_batches=cfg.grad_accum)
     trainer.fit(module)
