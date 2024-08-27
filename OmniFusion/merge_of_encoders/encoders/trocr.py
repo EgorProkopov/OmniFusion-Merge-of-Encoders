@@ -6,6 +6,7 @@ class TrOCRVisionTower(nn.Module):
     def __init__(self, pth="microsoft/trocr-base-handwritten", select_feature='patch'):
         super().__init__()
         self.model = VisionEncoderDecoderModel.from_pretrained(pth).encoder
+        self.model.requires_grad_(False)
         self.image_processor = TrOCRProcessor.from_pretrained(pth).image_processor
         self.cfg_only = TrOCRConfig.from_pretrained(pth)
         self.select_feature = select_feature
