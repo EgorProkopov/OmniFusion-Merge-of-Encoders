@@ -8,8 +8,9 @@ from datasets import load_dataset
 
 
 def load_llava_recap_558k():
-    return load_dataset("lmms-lab/LLaVA-ReCap-558K")['train'][:10]
-
+    ds =  load_dataset("lmms-lab/LLaVA-ReCap-558K")
+    ds['train'] = ds['train'][:10]
+    return ds
 
 class ImageCaptioning(Dataset):
     def __init__(
