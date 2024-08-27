@@ -4,13 +4,17 @@ import torch
 from torch.utils.data import Dataset
 import transformers
 
-from datasets import load_dataset
+from datasets import load_dataset, DatasetDict
 
 
 def load_llava_recap_558k():
-    ds =  load_dataset("lmms-lab/LLaVA-ReCap-558K")
-    ds['train'] = ds['train'][:10]
-    return ds
+    ds = load_dataset("lmms-lab/LLaVA-ReCap-558K")
+    cropped_train = ds['train'].select(range(10))
+
+    # Create a new DatasetDict with the cropped train dataset
+    cropped_dataset_dict = DatasetDict({
+        'train': cropped_train
+    })
 
 class ImageCaptioning(Dataset):
     def __init__(
