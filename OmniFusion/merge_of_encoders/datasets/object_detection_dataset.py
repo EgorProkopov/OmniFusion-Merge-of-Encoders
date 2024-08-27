@@ -23,8 +23,7 @@ class COCOODImageCaptioning(Dataset):
         self.clip_image_processor = clip_image_processor
         self.encoder_image_processor = encoder_image_processor
 
-    def get_category_name_by_id(self, id):
-        categories_names = [
+        self.categories_names = [
             "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
             "truck", "boat", "traffic light", "fire hydrant", "stop sign", "parking meter",
             "bench", "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear",
@@ -38,7 +37,22 @@ class COCOODImageCaptioning(Dataset):
             "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
             "teddy bear", "hair drier", "toothbrush"
         ]
-        return categories_names[id]
+        self.questions_pool = [
+            "Detect objects on this image.",
+            "Which objects are depicted on this image and where are they located?",
+            "Locate objects on this image and find their area.",
+            "Find objects on this image and calculate their area.",
+            "Which objects can you find on this image?",
+            "Call objects on this image and find their area.",
+            "What can you tell about objects on this image",
+            "Find area of this objects.",
+            "Which object in this picture has the largest area.",
+            "Name the objects on this image."
+        ]
+
+
+    def get_category_name_by_id(self, id):
+        return self.categories_names[id]
 
     def get_text_captioning(self, bboxes_list, categories_list, areas_list, width_scale, height_scale):
         num_objects = len(categories_list)
@@ -84,19 +98,7 @@ class COCOODImageCaptioning(Dataset):
         return image, text_captioning
 
     def _sample_question(self):
-        questions_pool = [
-            "Detect objects on this image.",
-            "Which objects are depicted on this image and where are they located?",
-            "Locate objects on this image and find their area.",
-            "Find objects on this image and calculate their area.",
-            "Which objects can you find on this image?",
-            "Call objects on this image and find their area.",
-            "What can you tell about objects on this image",
-            "Find area of this objects.",
-            "Which object in this picture has the largest area.",
-            "Name the objects on this image."
-        ]
-        question = np.random.choice(questions_pool, size=1, replace=False)
+        question = np.random.choice(self.questions_pool, size=1, replace=False)
         return question
 
     def __len__(self):
