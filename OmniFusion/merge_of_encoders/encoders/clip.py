@@ -1,8 +1,28 @@
 import torch
+from PIL.Image import Image
 from torch import nn
 from transformers import CLIPVisionModel, CLIPVisionConfig, CLIPImageProcessor
 
 
+def expand2square(pil_img, background_color=0):
+    width, height = pil_img.size
+    if width == height:
+        return pil_img
+    elif width > height:
+        result = Image.new(pil_img.mode, (width, width), background_color)
+        result.paste(pil_img, (0, (width - height) // 2))
+        return result
+    else:
+        result = Image.new(pil_img.mode, (height, height), background_color)
+        result.paste(pil_img, ((height - width) // 2, 0))
+        return result
+
+
+class CustomCLIPImageProcessor(CLIPImageProcessor):
+    def __call__(self, images=None, return_tensors=None, **kwargs):
+        return super().__call__(expand2square(images).resize((self.crop_size['height'], self.crop_size['width'])),
+                                return_tensors=return_tensors,
+                                do_center_crop=False, **kwargs)
 
 
 class CLIPVisionTower(nn.Module):
@@ -21,7 +41,7 @@ class CLIPVisionTower(nn.Module):
             self.cfg_only = CLIPVisionConfig.from_pretrained(self.vision_tower_name)
 
     def load_model(self):
-        self.image_processor = CLIPImageProcessor.from_pretrained(self.vision_tower_name)
+        self.image_processor = CustomCLIPImageProcessor.from_pretrained(self.vision_tower_name)
         self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name)
         self.vision_tower.requires_grad_(False)
 

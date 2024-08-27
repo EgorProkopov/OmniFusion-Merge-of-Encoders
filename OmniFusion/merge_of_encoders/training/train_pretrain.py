@@ -15,7 +15,7 @@ from pytorch_lightning.loggers import CSVLogger
 
 from OmniFusion.merge_of_encoders.encoders.clip import CLIPVisionTower
 from OmniFusion.merge_of_encoders.encoders.utils import initialize_special_embs
-from OmniFusion.merge_of_encoders.adapters import VisualToGPTMapping
+from OmniFusion.merge_of_encoders.adapters import VisualToGPTMapping, MLPAdapter
 from OmniFusion.merge_of_encoders.datasets.image_captioning_dataset import get_dataset, get_collate_function
         
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     clip.load_model()
     clip = clip.to(dtype=DTYPE)
 
-    projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=DTYPE)
+    projection = MLPAdapter(1024, cfg.emb_dim).to(dtype=DTYPE)
     projection.transformer_layer.norm_first = False
     
     special_embs = initialize_special_embs(emb_dim=cfg.emb_dim, device='cpu', dtype=DTYPE)
