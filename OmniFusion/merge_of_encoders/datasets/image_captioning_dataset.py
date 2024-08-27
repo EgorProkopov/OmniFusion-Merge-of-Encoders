@@ -15,6 +15,7 @@ def load_llava_recap_558k():
     cropped_dataset_dict = DatasetDict({
         'train': cropped_train
     })
+    return cropped_dataset_dict
 
 class ImageCaptioning(Dataset):
     def __init__(
