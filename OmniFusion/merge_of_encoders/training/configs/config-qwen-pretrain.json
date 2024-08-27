@@ -1,5 +1,5 @@
 {
-    "exp_name": "qwen2-default-pretrain",
+    "exp_name": "qwen2-05B-pretrain",
     "model_ckp": "Qwen/Qwen2-0.5B",
     "n_epochs": 1,
     "grad_accum": 4,
