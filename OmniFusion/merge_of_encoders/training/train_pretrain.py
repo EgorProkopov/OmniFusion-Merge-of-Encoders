@@ -112,11 +112,12 @@ class Model_pl(pl.LightningModule):
             
         self.log("my_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         if batch_idx % 25000 == 0:
+            pass
             # if not os.path.exists(f"ckpts/{self.cfg.exp_name}/{batch_idx}"):
             # os.mkdir(f"ckpts/{self.cfg.exp_name}/{batch_idx}", exist_ok = True)
-            os.makedirs(f"ckpts/{self.cfg.exp_name}/{batch_idx}", exist_ok=True)
-            torch.save(self.projection, f"ckpts/{self.cfg.exp_name}/{batch_idx}/projection.pt")
-            torch.save(self.special_embs, f"ckpts/{self.cfg.exp_name}/{batch_idx}/special_embeddings.pt")
+            # os.makedirs(f"ckpts/{self.cfg.exp_name}/{batch_idx}", exist_ok=True)
+            # torch.save(self.projection, f"ckpts/{self.cfg.exp_name}/{batch_idx}/projection.pt")
+            # torch.save(self.special_embs, f"ckpts/{self.cfg.exp_name}/{batch_idx}/special_embeddings.pt")
         return loss
 
     def train_dataloader(self):
@@ -157,5 +158,9 @@ if __name__ == "__main__":
     collate_function = get_collate_function(cfg)
 
     module = Model_pl(cfg, clip, special_embs, model, projection, train_dataset, collate_function)
-    trainer = pl.Trainer(devices=[0, 2, 3], max_epochs=cfg.n_epochs, logger=logger, accumulate_grad_batches=cfg.grad_accum)
+    trainer = pl.Trainer(
+        devices=[0, 1, 2], max_epochs=cfg.n_epochs,
+        logger=logger, accumulate_grad_batches=cfg.grad_accum,
+        strategy='ddp_find_unused_parameters_true'
+    )
     trainer.fit(module)
