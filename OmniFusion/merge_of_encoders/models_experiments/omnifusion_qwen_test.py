@@ -82,6 +82,7 @@ if __name__ == "__main__":
         num_gpt_embs=576,
         num_heads=4
     )
+    mlp_projector.load_state_dict(torch.load("./ckpts/qwen2-05B-pretrain/version_4/projection.pt"))
     mlp_projector = mlp_projector.to(device=DEVICE, dtype=DTYPE)
 
     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-0.5B", )

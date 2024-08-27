@@ -1,7 +1,7 @@
 {
     "exp_name": "qwen2-default-pretrain",
     "model_ckp": "Qwen/Qwen2-0.5B",
-    "clip_adapter_ckp": "./ckpts/qwen2-05B-pretrain-version_4/projection.pt",
+    "clip_adapter_ckp": "./ckpts/qwen2-05B-pretrain/version_4/projection.pt",
     "encoder_ckp": "",
     "n_epochs": 1,
     "grad_accum": 4,
