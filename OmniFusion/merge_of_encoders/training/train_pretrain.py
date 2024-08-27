@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
     module = Model_pl(cfg, clip, special_embs, model, projection, train_dataset, collate_function)
     trainer = pl.Trainer(
-        devices=[0, 1, 2], max_epochs=cfg.n_epochs,
+        devices=[0, 2, 3], max_epochs=cfg.n_epochs,
         logger=logger, accumulate_grad_batches=cfg.grad_accum,
         strategy='ddp_find_unused_parameters_true'
     )
