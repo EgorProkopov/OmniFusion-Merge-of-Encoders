@@ -52,12 +52,12 @@ def gen_answer(
         embeddings = torch.cat(
             [
                 prompt_embeddings,
-                special_embs['SOI'][None, None, ...],
+                special_embs['SOI'][None, None, ...].to(dtype=DTYPE, device=DEVICE),
                 projected_vision_embeddings,
-                special_embs['EOI'][None, None, ...],
-                special_embs['USER'][None, None, ...],
+                special_embs['EOI'][None, None, ...].to(dtype=DTYPE, device=DEVICE),
+                special_embs['USER'][None, None, ...].to(dtype=DTYPE, device=DEVICE),
                 question_embeddings,
-                special_embs['BOT'][None, None, ...]
+                special_embs['BOT'][None, None, ...].to(dtype=DTYPE, device=DEVICE)
             ],
             dim=1,
         ).to(dtype=DTYPE, device=DEVICE)
@@ -92,8 +92,7 @@ if __name__ == "__main__":
     ldp_projector = ldp_projector.to(device=DEVICE, dtype=DTYPE)
 
     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-1.5B", )
-    special_embs = initialize_special_embs(emb_dim=EMB_DIM, dtype=DTYPE, device=DEVICE)
-    special_embs = torch.load("./ckpts/qwen2-15B-pretrain/matvey_weights/special_embeddings-2.pt").to(dtype=DTYPE, device=DEVICE)
+    special_embs = torch.load("./ckpts/qwen2-15B-pretrain/matvey_weights/special_embeddings-2.pt")
     model = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path="Qwen/Qwen2-1.5B",
         torch_dtype=DTYPE,
