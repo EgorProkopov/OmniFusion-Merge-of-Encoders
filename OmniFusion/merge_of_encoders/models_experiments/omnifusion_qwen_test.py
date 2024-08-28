@@ -83,10 +83,10 @@ if __name__ == "__main__":
     # )
     # mlp_projector.load_state_dict(torch.load("./ckpts/qwen2-15B-pretrain/matvey_weights/projection.pt"))
     # mlp_projector = mlp_projector.to(device=DEVICE, dtype=DTYPE)
-    ldp_projector = LDPNetV2Projector(
-        mm_hidden_size=1024,
-        hidden_size=EMB_DIM,
-        num_mm_tokens=144
+    ldp_projector = VisualToGPTMapping(
+        visual_emb_dim=1024,
+        gpt_emb_dim=EMB_DIM,
+        num_tokens=576,
     )
     ldp_projector.load_state_dict(torch.load("./ckpts/qwen2-15B-pretrain/matvey_weights/projection_ldp.pth"))
     ldp_projector = ldp_projector.to(device=DEVICE, dtype=DTYPE)
