@@ -86,7 +86,7 @@ if __name__ == "__main__":
     ldp_projector = LDPNetV2Projector(
         mm_hidden_size=1024,
         hidden_size=EMB_DIM,
-        num_mm_tokens=576
+        num_mm_tokens=144
     )
     ldp_projector.load_state_dict(torch.load("./ckpts/qwen2-15B-pretrain/matvey_weights/projection_ldp.pth"))
     ldp_projector = ldp_projector.to(device=DEVICE, dtype=DTYPE)
