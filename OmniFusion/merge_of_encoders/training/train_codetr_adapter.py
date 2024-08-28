@@ -130,11 +130,11 @@ class Model_pl(pl.LightningModule):
         loss = self.loss_fct(logits.view(-1, self.n_embeddings), labels.view(-1)).mean()
 
         self.log("my_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
-        if batch_idx % 25000 == 0:
-            os.makedirs(f"ckpts/{self.cfg.exp_name}/{batch_idx}", exist_ok=True)
-            torch.save(self.projection, f"ckpts/{self.cfg.exp_name}/{batch_idx}/projection.pt")
-            torch.save(self.special_embs, f"ckpts/{self.cfg.exp_name}/{batch_idx}/special_embeddings.pt")
-            torch.save(self.encoder_projection, f"ckpts/{self.cfg.exp_name}/{batch_idx}/{self.encoder_name}_projection.pt")
+        # if batch_idx % 25000 == 0:
+        #     os.makedirs(f"ckpts/{self.cfg.exp_name}/{batch_idx}", exist_ok=True)
+        #     torch.save(self.projection, f"ckpts/{self.cfg.exp_name}/{batch_idx}/projection.pt")
+        #     torch.save(self.special_embs, f"ckpts/{self.cfg.exp_name}/{batch_idx}/special_embeddings.pt")
+        #     torch.save(self.encoder_projection, f"ckpts/{self.cfg.exp_name}/{batch_idx}/{self.encoder_name}_projection.pt")
 
         return loss
 
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     clip_projection.transformer_layer.norm_first = False
 
     special_embs = initialize_special_embs(emb_dim=cfg.emb_dim, device='cpu', dtype=DTYPE)
-    freeze(model), freeze(clip), freeze(encoder), freeze(clip_projection)
+    freeze(model), freeze(clip), freeze(encoder), freeze(clip_projection), freeze(special_embs)
 
     train_dataset = get_dataset(cfg, tokenizer, clip.image_processor)
     collate_function = get_collate_function(cfg)
@@ -201,6 +201,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         devices=[0, 2, 3], max_epochs=cfg.n_epochs,
         logger=[logger, wandb_logger],
-        accumulate_grad_batches=cfg.grad_accum
+        accumulate_grad_batches=cfg.grad_accum,
+        strategy="auto"
     )
     trainer.fit(module)
