@@ -121,7 +121,7 @@ class ImageCaptioning(Dataset):
 
 def get_dataset(cfg, tokenizer, image_processor, max_len=64):
     data = load_llava_recap_558k()['train']
-    return ImageCaptioning(cfg, data, tokenizer, image_processor, max_length=64)
+    return ImageCaptioning(cfg, data, tokenizer, image_processor, max_length=max_len)
 
 
 def get_collate_function(cfg):

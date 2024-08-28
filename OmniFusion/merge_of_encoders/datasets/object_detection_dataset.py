@@ -183,7 +183,7 @@ def get_dataset(cfg, tokenizer, image_processor, encoder_image_processor, max_le
     data = download_coco()['train']
     return COCOODImageCaptioning(
         cfg, data,
-        tokenizer, image_processor, encoder_image_processor, max_length=64
+        tokenizer, image_processor, encoder_image_processor, max_length=max_len
     )
 
 
