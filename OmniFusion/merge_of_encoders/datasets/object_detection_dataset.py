@@ -13,7 +13,7 @@ def download_coco():
 class COCOODImageCaptioning(Dataset):
     def __init__(
             self, cfg, data, tokenizer,
-            clip_image_processor, encoder_image_processor
+            clip_image_processor, encoder_image_processor, max_length=64,
     ):
         super().__init__()
         self.cfg = cfg
@@ -50,6 +50,7 @@ class COCOODImageCaptioning(Dataset):
             "Name the objects on this image."
         ]
 
+        self.max_length = max_length
 
     def get_category_name_by_id(self, id):
         return self.categories_names[id]
@@ -115,7 +116,11 @@ class COCOODImageCaptioning(Dataset):
         tokens = []
         positions = []
 
-        prompt_tokens = self.tokenizer.encode(f"{self.cfg.prompt}", add_special_tokens=False, return_tensors="pt")
+        prompt_tokens = self.tokenizer.encode(
+            f"{self.cfg.prompt}", padding="max_length",
+            max_length=self.max_length, truncation=True,
+            add_special_tokens=False, return_tensors="pt"
+        )
         prompt_len = prompt_tokens.shape[-1]
         tokens.append(prompt_tokens)
         mask = prompt_len * [False]
@@ -157,7 +162,11 @@ class COCOODImageCaptioning(Dataset):
             if conversation['from'] != 'human':
                 text += self.tokenizer.eos_token
 
-            text_tokens = self.tokenizer.encode(text, add_special_tokens=False, return_tensors="pt")
+            text_tokens = self.tokenizer.encode(
+                text, padding="max_length",
+                max_length=self.max_length, truncation=True,
+                add_special_tokens=False, return_tensors="pt"
+            )
             tokens.append(text_tokens)
             if conversation['from'] == 'human':
                 mask += text_tokens.shape[-1] * [False]
@@ -170,11 +179,11 @@ class COCOODImageCaptioning(Dataset):
         return clip_embs, encoder_embs, tokens, mask, positions
 
 
-def get_dataset(cfg, tokenizer, image_processor, encoder_image_processor):
+def get_dataset(cfg, tokenizer, image_processor, encoder_image_processor, max_len=64):
     data = download_coco()['train']
     return COCOODImageCaptioning(
         cfg, data,
-        tokenizer, image_processor, encoder_image_processor
+        tokenizer, image_processor, encoder_image_processor, max_length=64
     )
 
 
