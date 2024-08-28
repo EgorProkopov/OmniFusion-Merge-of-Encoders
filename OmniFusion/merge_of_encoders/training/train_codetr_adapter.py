@@ -185,7 +185,7 @@ if __name__ == "__main__":
     special_embs = torch.load(cfg.special_embs_ckp)
     freeze(model), freeze(clip), freeze(encoder), freeze(clip_projection)#, freeze(special_embs)
 
-    train_dataset = get_dataset(cfg, tokenizer, clip.image_processor)
+    train_dataset = get_dataset(cfg, tokenizer, clip.image_processor, encoder.image_processor)
     collate_function = get_collate_function(cfg)
 
 
