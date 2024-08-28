@@ -180,7 +180,7 @@ if __name__ == "__main__":
 
     clip_projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num).to(dtype=DTYPE)
     clip_projection.load_state_dict(torch.load(cfg.clip_adapter_ckp))
-    clip_projection.transformer_layer.norm_first = False
+    # clip_projection.transformer_layer.norm_first = False
 
     special_embs = torch.load(cfg.special_embs_ckp)
     freeze(model), freeze(clip), freeze(encoder), freeze(clip_projection), freeze(special_embs)
