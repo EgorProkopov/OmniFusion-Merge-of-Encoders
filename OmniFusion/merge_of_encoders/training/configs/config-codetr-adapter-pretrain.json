@@ -3,7 +3,7 @@
     "model_ckp": "Qwen/Qwen2-1.5B",
     "clip_adapter_ckp": "./ckpts/qwen2-15B-pretrain/matvey_weights/projection_ldp.pth",
     "special_embs_ckp": "./ckpts/qwen2-15B-pretrain/matvey_weights/special_embeddings-2.pth",
-    "encoder_ckp": "",
+    "encoder_ckp": "microsoft/conditional-detr-resnet-50",
     "n_epochs": 1,
     "grad_accum": 4,
     "learning_rate": 1e-2,

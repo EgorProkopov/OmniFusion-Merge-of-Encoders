@@ -171,7 +171,7 @@ if __name__ == "__main__":
     clip.load_model()
     clip = clip.to(dtype=DTYPE)
 
-    encoder = CoDETRVisionTower("microsoft/conditional-detr-resnet-50") # TODO: codetr, plots, ocr, etc.
+    encoder = CoDETRVisionTower(cfg.encoder_ckp)  # TODO: codetr, plots, ocr, etc.
     encoder.load_model()
     encoder = encoder.to(dtype=DTYPE)
 
