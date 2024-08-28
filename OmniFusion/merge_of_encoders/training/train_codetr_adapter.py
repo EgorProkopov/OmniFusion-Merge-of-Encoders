@@ -16,7 +16,7 @@ from pytorch_lightning.loggers import CSVLogger, WandbLogger  # Import WandbLogg
 from OmniFusion.merge_of_encoders.encoders.clip import CLIPVisionTower
 from OmniFusion.merge_of_encoders.encoders.utils import initialize_special_embs
 from OmniFusion.merge_of_encoders.adapters import VisualToGPTMapping
-from OmniFusion.merge_of_encoders.datasets.image_captioning_dataset import get_dataset, get_collate_function
+from OmniFusion.merge_of_encoders.datasets.object_detection_dataset import get_dataset, get_collate_function
 
 from OmniFusion.merge_of_encoders.encoders.codetr import CoDETRVisionTower
 class Config:
