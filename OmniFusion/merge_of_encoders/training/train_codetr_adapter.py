@@ -175,10 +175,10 @@ if __name__ == "__main__":
     encoder.load_model()
     encoder = encoder.to(dtype=DTYPE)
 
-    projection = VisualToGPTMapping(256, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=DTYPE)
+    projection = VisualToGPTMapping(256, cfg.emb_dim, cfg.vision_emb_num).to(dtype=DTYPE)
     projection.transformer_layer.norm_first = False
 
-    clip_projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num, cfg.projection_num_head).to(dtype=DTYPE)
+    clip_projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num).to(dtype=DTYPE)
     clip_projection.load_state_dict(torch.load(cfg.clip_adapter_ckp))
     clip_projection.transformer_layer.norm_first = False
 
