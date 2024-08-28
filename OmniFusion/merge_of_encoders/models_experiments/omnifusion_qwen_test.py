@@ -11,12 +11,11 @@ from huggingface_hub import hf_hub_download
 
 from OmniFusion.merge_of_encoders.encoders.clip import CLIPVisionTower
 from OmniFusion.merge_of_encoders.encoders.utils import initialize_special_embs
-from OmniFusion.merge_of_encoders.adapters import VisualToGPTMapping
+from OmniFusion.merge_of_encoders.adapters import VisualToGPTMapping, LDPNetV2Projector
 
-
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-DTYPE = torch.float32
-EMB_DIM = 896
+DEVICE = "cuda:3" if torch.cuda.is_available() else "cpu"
+DTYPE = torch.float16
+EMB_DIM = 1536
 PROMPT = "This is a dialog with AI assistant.\n"
 
 
@@ -76,19 +75,27 @@ if __name__ == "__main__":
     clip.load_model()
     clip = clip.to(device=DEVICE, dtype=DTYPE)
 
-    mlp_projector = VisualToGPTMapping(
-        visual_emb_dim=1024,
-        gpt_emb_dim=EMB_DIM,
-        num_gpt_embs=576,
-        num_heads=4
+    # mlp_projector = VisualToGPTMapping(
+    #     visual_emb_dim=1024,
+    #     gpt_emb_dim=EMB_DIM,
+    #     num_gpt_embs=576,
+    #     num_heads=4
+    # )
+    # mlp_projector.load_state_dict(torch.load("./ckpts/qwen2-15B-pretrain/matvey_weights/projection.pt"))
+    # mlp_projector = mlp_projector.to(device=DEVICE, dtype=DTYPE)
+    ldp_projector = LDPNetV2Projector(
+        mm_hidden_size=1024,
+        hidden_size=EMB_DIM,
+        num_mm_tokens=576
     )
-    mlp_projector.load_state_dict(torch.load("./ckpts/qwen2-05B-pretrain/version_4/projection.pt"))
-    mlp_projector = mlp_projector.to(device=DEVICE, dtype=DTYPE)
+    ldp_projector.load_state_dict(torch.load("./ckpts/qwen2-15B-pretrain/matvey_weights/projection_ldp.pth"))
+    ldp_projector = ldp_projector.to(device=DEVICE, dtype=DTYPE)
 
-    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-0.5B", )
+    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-1.5B", )
     special_embs = initialize_special_embs(emb_dim=EMB_DIM, dtype=DTYPE, device=DEVICE)
+    special_embs.load_state_dict(torch.load("./ckpts/qwen2-15B-pretrain/matvey_weights/special_embeddings-2.pt"))
     model = AutoModelForCausalLM.from_pretrained(
-        pretrained_model_name_or_path="Qwen/Qwen2-0.5B",
+        pretrained_model_name_or_path="Qwen/Qwen2-1.5B",
         torch_dtype=DTYPE,
         device_map=DEVICE
     )
@@ -102,7 +109,7 @@ if __name__ == "__main__":
         model,
         tokenizer,
         clip,
-        mlp_projector,
+        ldp_projector,
         query=question,
         special_embs=special_embs,
         image=img
