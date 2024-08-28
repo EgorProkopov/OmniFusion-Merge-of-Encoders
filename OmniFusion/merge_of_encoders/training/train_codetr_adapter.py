@@ -182,7 +182,7 @@ if __name__ == "__main__":
     clip_projection.load_state_dict(torch.load(cfg.clip_adapter_ckp))
     clip_projection.transformer_layer.norm_first = False
 
-    special_embs = initialize_special_embs(emb_dim=cfg.emb_dim, device='cpu', dtype=DTYPE)
+    special_embs = torch.load(cfg.special_embs_ckp)
     freeze(model), freeze(clip), freeze(encoder), freeze(clip_projection), freeze(special_embs)
 
     train_dataset = get_dataset(cfg, tokenizer, clip.image_processor)
