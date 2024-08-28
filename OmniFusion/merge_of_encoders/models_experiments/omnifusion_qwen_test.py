@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-1.5B", )
     special_embs = initialize_special_embs(emb_dim=EMB_DIM, dtype=DTYPE, device=DEVICE)
-    special_embs.load_state_dict(torch.load("./ckpts/qwen2-15B-pretrain/matvey_weights/special_embeddings-2.pt"))
+    special_embs = torch.load("./ckpts/qwen2-15B-pretrain/matvey_weights/special_embeddings-2.pt")
     model = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path="Qwen/Qwen2-1.5B",
         torch_dtype=DTYPE,
