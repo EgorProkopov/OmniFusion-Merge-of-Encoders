@@ -20,7 +20,7 @@ def load_llava_recap_558k():
 class ImageCaptioning(Dataset):
     def __init__(
             self, cfg, data, tokenizer, image_processor,
-            transforms=None, augmentation=None
+            transforms=None, augmentation=None, max_length=128
     ):
         super().__init__()
         self.cfg = cfg
@@ -31,6 +31,7 @@ class ImageCaptioning(Dataset):
 
         self.transforms = transforms
         self.augmentation = augmentation
+        self.max_length = max_length
 
     def _sample_question(self):
         questions_pool = [
@@ -55,7 +56,11 @@ class ImageCaptioning(Dataset):
         tokens = []
         positions = []
 
-        prompt_tokens = self.tokenizer.encode(f"{self.cfg.prompt}", add_special_tokens=False, return_tensors="pt")
+        prompt_tokens = self.tokenizer.encode(
+            f"{self.cfg.prompt}", padding="max_length",
+            max_length=self.max_length, truncation=True,
+            add_special_tokens=False, return_tensors="pt"
+        )
         prompt_len = prompt_tokens.shape[-1]
         tokens.append(prompt_tokens)
         mask = prompt_len * [False]
@@ -98,7 +103,11 @@ class ImageCaptioning(Dataset):
             else:
                 text += self.tokenizer.eos_token
 
-            text_tokens = self.tokenizer.encode(text, add_special_tokens=False, return_tensors="pt")
+            text_tokens = self.tokenizer.encode(
+                text, padding="max_length",
+                max_length=self.max_length, truncation=True,
+                add_special_tokens=False, return_tensors="pt"
+            )
             tokens.append(text_tokens)
             if conversation['from'] == 'human':
                 mask += text_tokens.shape[-1] * [False]
