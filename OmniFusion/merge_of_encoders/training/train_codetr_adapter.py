@@ -176,7 +176,7 @@ if __name__ == "__main__":
     encoder = encoder.to(dtype=DTYPE)
 
     projection = VisualToGPTMapping(256, cfg.emb_dim, cfg.vision_emb_num).to(dtype=DTYPE)
-    projection.transformer_layer.norm_first = False
+    # projection.transformer_layer.norm_first = False
 
     clip_projection = VisualToGPTMapping(1024, cfg.emb_dim, cfg.vision_emb_num).to(dtype=DTYPE)
     clip_projection.load_state_dict(torch.load(cfg.clip_adapter_ckp))
