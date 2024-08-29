@@ -1,8 +1,8 @@
 {
     "exp_name": "qwen2-default-pretrain",
     "model_ckp": "Qwen/Qwen2-0.5B",
-    "clip_adapter_ckp": "./ckpts/qwen2-05B-pretrain/version_4/projection.pt",
-    "special_embs_ckp": "./ckpts/qwen2-05B-pretrain/version_4/special_embeddings.pt",
+    "clip_adapter_ckp": "./ckpts/qwen2-05B-pretrain/matvey_weights/projection_qwen05.pth",
+    "special_embs_ckp": "./ckpts/qwen2-05B-pretrain/matvey_weights/special_embeddings.pt",
     "encoder_ckp": "microsoft/conditional-detr-resnet-50",
     "n_epochs": 1,
     "grad_accum": 4,
