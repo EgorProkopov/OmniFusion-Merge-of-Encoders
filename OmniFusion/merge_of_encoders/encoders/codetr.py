@@ -21,7 +21,7 @@ def expand2square(pil_img, background_color=0):
 
 class CustomCoDetrImageProcessor(ConditionalDetrImageProcessor):
     def __call__(self, images=None, return_tensors=None, **kwargs):
-        return super().__call__(expand2square(images).resize((self.crop_size['height'], self.crop_size['width'])),
+        return super().__call__(expand2square(images).resize((640, 640)),
                                 return_tensors=return_tensors,
                                 do_center_crop=False, **kwargs)
 
