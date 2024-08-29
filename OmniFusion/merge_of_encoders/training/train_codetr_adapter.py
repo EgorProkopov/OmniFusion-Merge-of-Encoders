@@ -113,9 +113,9 @@ class Model_pl(pl.LightningModule):
                     embeddings[i][pos['position'][0]:pos['position'][1]] = projected_vision_embeddings[img_idx_counter].to(dtype=self.DTYPE)
                     img_idx_counter += 1
 
-        embeddings = embeddings[:, :self.cfg.max_context_len].to(dtype=self.DTYPE)
-        labels = labels[:, :self.cfg.max_context_len].to(dtype=self.DTYPE)
-        mask = mask[:, :self.cfg.max_context_len].to(dtype=self.DTYPE)
+        embeddings = embeddings[:, :self.cfg.max_context_len]
+        labels = labels[:, :self.cfg.max_context_len]
+        mask = mask[:, :self.cfg.max_context_len]
 
         with torch.autocast(device_type="cuda", dtype=self.DTYPE):
             logits = self.model(inputs_embeds=embeddings.to(dtype=self.DTYPE), output_hidden_states=True).get("logits")[
@@ -125,7 +125,7 @@ class Model_pl(pl.LightningModule):
         mask = mask[:, 1:]
 
         logits = logits[mask].contiguous().float()
-        labels = labels[mask].contiguous().to(dtype=self.DTYPE)
+        labels = labels[mask].contiguous()
 
         loss = self.loss_fct(logits.view(-1, self.n_embeddings), labels.view(-1)).mean()
 
