@@ -1,5 +1,7 @@
 # OmniFusion
 
+[Презентация](https://docs.google.com/presentation/d/1hE_06-B7y0WuTdvkAzPgSHGVwcMIwg-XaGNIYKUfy_4/edit?usp=sharing) [Отчет](https://drive.google.com/file/d/1J04OJEP_sBSR-5UUlg3Cg16l_thk0FgI/view?usp=sharing)
+
 [![Hugging Face](https://img.shields.io/badge/Model-Hugging%20Face-yellow)](https://huggingface.co/AIRI-Institute/OmniFusion)
 
 [ArXiv](https://arxiv.org/abs/2404.06212) [Project page](https://airi-institute.github.io/OmniFusion/)
