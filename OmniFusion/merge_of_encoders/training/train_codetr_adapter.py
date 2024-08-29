@@ -92,40 +92,44 @@ class Model_pl(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         clip_embs, encoder_embs, images_mask, labels, mask, positions = batch
         if images_mask.sum() > 0:
-            clip_embedding = self.clip(clip_embs)
-            encoder_embedding = self.encoder(encoder_embs)
+            clip_embedding = self.clip(clip_embs).to(dtype=self.DTYPE)  # preprocessing!!!
+            encoder_embedding = self.encoder(encoder_embs).to(dtype=self.DTYPE)
 
-            projected_clip_embeddings = self.projection(clip_embedding)
-            projected_encoder_embeddings = self.encoder_projection(encoder_embedding)
+            projected_clip_embeddings = self.projection(clip_embedding).to(dtype=self.DTYPE)
+            projected_encoder_embeddings = self.encoder_projection(encoder_embedding).to(dtype=self.DTYPE)
 
             projected_vision_embeddings = torch.cat([
                 projected_clip_embeddings, projected_encoder_embeddings
-            ], dim=-1)
+            ], dim=1).to(dtype=self.DTYPE)
 
-        embeddings = self.model.model.embed_tokens(labels)
+        embeddings = self.model.model.embed_tokens(labels).to(dtype=DTYPE)
         img_idx_counter = 0
         for i in range(len(embeddings)):
             for pos in positions[i]:
 
                 if pos['type'] in self.special_embs.keys():
-                    embeddings[i][pos['position']] = self.special_embs[pos['type']]
+                    embeddings[i][pos['position']] = self.special_embs[pos['type']].to(dtype=self.DTYPE)
                 if pos['type'] == 'IMG':
-                    embeddings[i][pos['position'][0]:pos['position'][1]] = projected_vision_embeddings[img_idx_counter]
+                    embeddings[i][pos['position'][0]:pos['position'][1]] = projected_vision_embeddings[
+                        img_idx_counter].to(dtype=self.DTYPE)
                     img_idx_counter += 1
 
-        embeddings = embeddings[:, :self.cfg.max_context_len]
-        labels = labels[:, :self.cfg.max_context_len]
+        embeddings = embeddings[:, :self.cfg.max_context_len].to(dtype=self.DTYPE)
+        labels = labels[:, :self.cfg.max_context_len].long()
         mask = mask[:, :self.cfg.max_context_len]
 
-        with torch.autocast(device_type="cuda"):
-            logits = self.model(inputs_embeds=embeddings, output_hidden_states=True).get("logits")[
+        with torch.autocast(
+                device_type="cuda:0",
+                dtype=self.DTYPE):
+            logits = self.model(inputs_embeds=embeddings.to(dtype=self.DTYPE), output_hidden_states=True).get(
+                "logits")[
                      :, :-1]
 
         labels = labels[:, 1:]
         mask = mask[:, 1:]
 
         logits = logits[mask].contiguous().float()
-        labels = labels[mask].contiguous()
+        labels = labels[mask].contiguous().long()
 
         loss = self.loss_fct(logits.view(-1, self.n_embeddings), labels.view(-1)).mean()
 
