@@ -13,7 +13,7 @@
     "emb_dim": 896,
     "max_context_len": 2048,
     "vision_emb_num": 576,
-    "encoder_emb_num": 800,
+    "encoder_emb_num": 576,
     "projection_num_head": 4,
     "json_data_path": "path_to_your_dataset.json",
     "image_folder": "path_to_your_images_folder"

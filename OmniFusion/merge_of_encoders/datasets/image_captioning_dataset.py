@@ -67,7 +67,7 @@ class ImageCaptioning(Dataset):
 
         image = None
         if 'image' in data_item.keys():
-            image = self.image_processor(data_item['image'], return_tensors='pt')['pixel_values'][0]
+            image = self.image_processor(data_item['image'].convert('RGB'), return_tensors='pt')['pixel_values'][0]
 
             tokens.append(
                 torch.tensor(

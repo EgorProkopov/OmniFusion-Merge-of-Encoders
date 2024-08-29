@@ -109,6 +109,7 @@ class COCOODImageCaptioning(Dataset):
         data_item = self.data[item]
         # TODO: check scale
         image, text_captioning = self.process_coco_sample_to_image_captioning(data_item, width_scale=1.0, height_scale=1.0)
+        image = image.convert('RGB')
         question = self._sample_question()
 
         conversations = [{'from': 'human', 'value': question}, {'from':'synt_captioning', 'value': text_captioning}]
