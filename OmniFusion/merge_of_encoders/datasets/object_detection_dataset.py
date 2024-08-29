@@ -99,7 +99,7 @@ class COCOODImageCaptioning(Dataset):
         return image, text_captioning
 
     def _sample_question(self):
-        question = np.random.choice(self.questions_pool, size=1, replace=False)
+        question = np.random.choice(self.questions_pool, size=1, replace=False)[0]
         return question
 
     def __len__(self):
