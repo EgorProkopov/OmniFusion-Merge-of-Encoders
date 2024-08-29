@@ -118,7 +118,7 @@ class Model_pl(pl.LightningModule):
         mask = mask[:, :self.cfg.max_context_len]
 
         with torch.autocast(
-            device_type="cuda:0",
+            device_type="cuda",
             dtype=self.DTYPE):
             logits = self.model(inputs_embeds=embeddings.to(dtype=self.DTYPE), output_hidden_states=True).get("logits")[
                      :, :-1]
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     
     # Use both CSVLogger and WandbLogger
     trainer = pl.Trainer(
-        devices=[0], max_epochs=cfg.n_epochs,
+        devices=[0, 1 ,2], max_epochs=cfg.n_epochs,
         logger=[logger],
         accumulate_grad_batches=cfg.grad_accum,
         strategy="auto"
