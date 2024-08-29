@@ -18,7 +18,7 @@ sys.path.append('/home/OmniFusion-Merge-of-Encoders/')
 from OmniFusion.merge_of_encoders.encoders.clip import CLIPVisionTower
 from OmniFusion.merge_of_encoders.encoders.utils import initialize_special_embs
 from OmniFusion.merge_of_encoders.adapters import VisualToGPTMapping
-from OmniFusion.merge_of_encoders.datasets.tex_captioning_dataset import get_dataset, get_collate_function
+from OmniFusion.merge_of_encoders.datasets.tex_recognition_dataset import get_dataset, get_collate_function
 
 from OmniFusion.merge_of_encoders.encoders.texify import TexifyVisionTower
 class Config:
