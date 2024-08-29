@@ -52,6 +52,7 @@ class Model_pl(pl.LightningModule):
             train_dataset, collate_function
     ):
         super().__init__()
+        self.DTYPE = torch.float16
         self.cfg = cfg
         self.clip = clip
         self.encoder = encoder
@@ -59,7 +60,7 @@ class Model_pl(pl.LightningModule):
         self.projection = clip_projection
         self.encoder_projection = encoder_projection
         self.encoder_name = encoder_name
-        self.model = model
+        self.model = model.to(self.DTYPE)
         self.n_embeddings = model.model.embed_tokens.weight.shape[0]
         self.loss_fct = nn.CrossEntropyLoss(reduction="none", ignore_index=cfg.pad_id)
         self.train_dataset = train_dataset
@@ -68,7 +69,6 @@ class Model_pl(pl.LightningModule):
         self.save_hyperparameters('cfg')
         # self.automatic_optimization = False
 
-        self.DTYPE = torch.float16
 
     def configure_optimizers(self):
 
@@ -95,12 +95,12 @@ class Model_pl(pl.LightningModule):
             clip_embedding = self.clip(clip_embs).to(dtype=self.DTYPE)  # preprocessing!!!
             encoder_embedding = self.encoder(encoder_embs).to(dtype=self.DTYPE)
 
-            projected_clip_embeddings = self.projection(clip_embedding)
-            projected_encoder_embeddings = self.encoder_projection(encoder_embedding)
+            projected_clip_embeddings = self.projection(clip_embedding).to(dtype=self.DTYPE)
+            projected_encoder_embeddings = self.encoder_projection(encoder_embedding).to(dtype=self.DTYPE)
 
             projected_vision_embeddings = torch.cat([
                 projected_clip_embeddings, projected_encoder_embeddings
-            ], dim=-1)
+            ], dim=-1).to(dtype=self.DTYPE)
 
         embeddings = self.model.model.embed_tokens(labels).to(dtype=DTYPE)
         img_idx_counter = 0
@@ -108,14 +108,14 @@ class Model_pl(pl.LightningModule):
             for pos in positions[i]:
 
                 if pos['type'] in self.special_embs.keys():
-                    embeddings[i][pos['position']] = self.special_embs[pos['type']].to(dtype=DTYPE)
+                    embeddings[i][pos['position']] = self.special_embs[pos['type']].to(dtype=self.DTYPE)
                 if pos['type'] == 'IMG':
-                    embeddings[i][pos['position'][0]:pos['position'][1]] = projected_vision_embeddings[img_idx_counter]
+                    embeddings[i][pos['position'][0]:pos['position'][1]] = projected_vision_embeddings[img_idx_counter].to(dtype=self.DTYPE)
                     img_idx_counter += 1
 
-        embeddings = embeddings[:, :self.cfg.max_context_len]
-        labels = labels[:, :self.cfg.max_context_len]
-        mask = mask[:, :self.cfg.max_context_len]
+        embeddings = embeddings[:, :self.cfg.max_context_len].to(dtype=self.DTYPE)
+        labels = labels[:, :self.cfg.max_context_len].to(dtype=self.DTYPE)
+        mask = mask[:, :self.cfg.max_context_len].to(dtype=self.DTYPE)
 
         with torch.autocast(device_type="cuda", dtype=self.DTYPE):
             logits = self.model(inputs_embeds=embeddings.to(dtype=self.DTYPE), output_hidden_states=True).get("logits")[
@@ -125,7 +125,7 @@ class Model_pl(pl.LightningModule):
         mask = mask[:, 1:]
 
         logits = logits[mask].contiguous().float()
-        labels = labels[mask].contiguous()
+        labels = labels[mask].contiguous().to(dtype=self.DTYPE)
 
         loss = self.loss_fct(logits.view(-1, self.n_embeddings), labels.view(-1)).mean()
 
