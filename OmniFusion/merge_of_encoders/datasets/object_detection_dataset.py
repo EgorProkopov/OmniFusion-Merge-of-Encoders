@@ -91,7 +91,7 @@ class COCOODImageCaptioning(Dataset):
         image = data_sample['image']
 
         objects = data_sample['height']
-        categories_list = objects['categories']
+        categories_list = objects['category']
         bboxes_list = objects['bbox']
         areas_list = objects['area']
 
