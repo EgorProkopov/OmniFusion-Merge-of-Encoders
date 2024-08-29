@@ -12,7 +12,7 @@ from OmniFusion.merge_of_encoders.encoders.utils import initialize_special_embs
 DEVICE = "cuda:0"
 PROMPT = "This is a dialog with AI assistant.\n"
 DTYPE = torch.float32
-EMB_DIM = 1536
+EMB_DIM = 896
 
 # tokenizer = AutoTokenizer.from_pretrained("AIRI-Institute/OmniFusion", subfolder="OmniMistral-v1_1/tokenizer", use_fast=False)
 # model = AutoModelForCausalLM.from_pretrained("AIRI-Institute/OmniFusion", subfolder="OmniMistral-v1_1/tuned-model", torch_dtype=torch.float32, device_map=DEVICE)
