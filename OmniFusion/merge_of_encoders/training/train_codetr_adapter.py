@@ -110,8 +110,7 @@ class Model_pl(pl.LightningModule):
                 if pos['type'] in self.special_embs.keys():
                     embeddings[i][pos['position']] = self.special_embs[pos['type']].to(dtype=self.DTYPE)
                 if pos['type'] == 'IMG':
-                    embeddings[i][pos['position'][0]:pos['position'][1]] = projected_vision_embeddings[
-                        img_idx_counter].to(dtype=self.DTYPE)
+                    embeddings[i][pos['position'][0]:pos['position'][1]] = projected_vision_embeddings[img_idx_counter].to(dtype=self.DTYPE)
                     img_idx_counter += 1
 
         embeddings = embeddings[:, :self.cfg.max_context_len].to(dtype=self.DTYPE)
@@ -119,10 +118,9 @@ class Model_pl(pl.LightningModule):
         mask = mask[:, :self.cfg.max_context_len]
 
         with torch.autocast(
-                device_type="cuda:0",
-                dtype=self.DTYPE):
-            logits = self.model(inputs_embeds=embeddings.to(dtype=self.DTYPE), output_hidden_states=True).get(
-                "logits")[
+            device_type="cuda:0",
+            dtype=self.DTYPE):
+            logits = self.model(inputs_embeds=embeddings.to(dtype=self.DTYPE), output_hidden_states=True).get("logits")[
                      :, :-1]
 
         labels = labels[:, 1:]
@@ -203,8 +201,8 @@ if __name__ == "__main__":
     
     # Use both CSVLogger and WandbLogger
     trainer = pl.Trainer(
-        devices=[0,1, 2], max_epochs=cfg.n_epochs,
-        logger=[logger, wandb_logger],
+        devices=[0], max_epochs=cfg.n_epochs,
+        logger=[logger],
         accumulate_grad_batches=cfg.grad_accum,
         strategy="auto"
     )
