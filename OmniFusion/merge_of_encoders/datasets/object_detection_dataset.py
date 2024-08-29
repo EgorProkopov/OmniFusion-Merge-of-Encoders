@@ -90,7 +90,7 @@ class COCOODImageCaptioning(Dataset):
     def process_coco_sample_to_image_captioning(self, data_sample, width_scale, height_scale):
         image = data_sample['image']
 
-        objects = data_sample['height']
+        objects = data_sample['objects']
         categories_list = objects['category']
         bboxes_list = objects['bbox']
         areas_list = objects['area']
