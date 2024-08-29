@@ -102,13 +102,13 @@ class Model_pl(pl.LightningModule):
                 projected_clip_embeddings, projected_encoder_embeddings
             ], dim=-1)
 
-        embeddings = self.model.model.embed_tokens(labels)
+        embeddings = self.model.model.embed_tokens(labels).to(dtype=DTYPE)
         img_idx_counter = 0
         for i in range(len(embeddings)):
             for pos in positions[i]:
 
                 if pos['type'] in self.special_embs.keys():
-                    embeddings[i][pos['position']] = self.special_embs[pos['type']]
+                    embeddings[i][pos['position']] = self.special_embs[pos['type']].to(dtype=DTYPE)
                 if pos['type'] == 'IMG':
                     embeddings[i][pos['position'][0]:pos['position'][1]] = projected_vision_embeddings[img_idx_counter]
                     img_idx_counter += 1
