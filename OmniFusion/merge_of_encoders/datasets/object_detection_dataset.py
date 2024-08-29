@@ -108,7 +108,12 @@ class COCOODImageCaptioning(Dataset):
     def __getitem__(self, item):
         data_item = self.data[item]
         # TODO: check scale
-        image, text_captioning = self.process_coco_sample_to_image_captioning(data_item, width_scale=1.0, height_scale=1.0)
+        width, height = data_item['width'], data_item['height']
+        width_scale = width / self.encoder_image_processor.width
+        height_scale = height / self.encoder_image_processor.height
+        image, text_captioning = self.process_coco_sample_to_image_captioning(
+            data_item, width_scale=width_scale, height_scale=height_scale
+        )
         image = image.convert('RGB')
         question = self._sample_question()
 
