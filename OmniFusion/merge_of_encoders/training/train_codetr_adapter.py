@@ -52,7 +52,7 @@ class Model_pl(pl.LightningModule):
             train_dataset, collate_function
     ):
         super().__init__()
-        self.DTYPE = torch.float16
+        self.DTYPE = torch.float32
         self.cfg = cfg
         self.clip = clip
         self.encoder = encoder
@@ -144,7 +144,7 @@ class Model_pl(pl.LightningModule):
 
 
 if __name__ == "__main__":
-    DTYPE = torch.float16
+    DTYPE = torch.float32
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, default='./configs/config-pretrain.json')
