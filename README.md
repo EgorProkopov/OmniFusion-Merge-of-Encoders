@@ -1,7 +1,6 @@
 # OmniFusion
 
-[Презентация](https://docs.google.com/presentation/d/1hE_06-B7y0WuTdvkAzPgSHGVwcMIwg-XaGNIYKUfy_4/edit?usp=sharing) [Отчет](https://github.com/EgorProkopov/OmniFusion-Merge-of-Encoders/blob/main/report.pdf
-)
+[Презентация](https://docs.google.com/presentation/d/1hE_06-B7y0WuTdvkAzPgSHGVwcMIwg-XaGNIYKUfy_4/edit?usp=sharing) [Отчет](https://drive.google.com/file/d/1FC5GCrJDh-jay0B7GlowIrm86D9SOnAQ/view?usp=sharing)
 
 [![Hugging Face](https://img.shields.io/badge/Model-Hugging%20Face-yellow)](https://huggingface.co/AIRI-Institute/OmniFusion)
 
