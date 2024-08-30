@@ -9,3 +9,6 @@ __pycache__
 wandb
 ckpts
 
+.ipynb*
+lightning_logs/
+test_notebook.ipynb
